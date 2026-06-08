@@ -1,0 +1,136 @@
+import { useState } from "react";
+import axios from "axios";
+
+function Student() {
+  const [student, setStudent] = useState({
+    student_id: "",
+    student_name: "",
+    mobile_no: "",
+    gender: "",
+    address: "",
+    dob: "",
+    email: "",
+    admission_date: "",
+    status: "",
+    roll_no: "",
+    user_id: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setStudent((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      console.log("Sending data:", student);
+
+      const res = await axios.post(
+        "http://localhost:8080/student",   // ⚠️ CHECK THIS URL
+        student
+      );
+
+      console.log("Response:", res.data);
+
+      alert("Student Saved Successfully");
+
+      setStudent({
+        student_id: "",
+        student_name: "",
+        mobile_no: "",
+        gender: "",
+        address: "",
+        dob: "",
+        email: "",
+        admission_date: "",
+        status: "",
+        roll_no: "",
+        user_id: "",
+      });
+    } catch (error) {
+      console.log("ERROR:", error);
+
+      // IMPORTANT: real backend error show karega
+      alert(
+        error?.response?.data?.message ||
+        error.message ||
+        "Error saving student"
+      );
+    }
+  };
+
+  return (
+    <div style={pageStyle}>
+      <div style={cardStyle}>
+        <h2>Student Management</h2>
+
+        <form onSubmit={handleSubmit} style={formStyle}>
+
+          <input name="student_id" value={student.student_id} onChange={handleChange} placeholder="Student ID" style={inputStyle} />
+          <input name="student_name" value={student.student_name} onChange={handleChange} placeholder="Student Name" style={inputStyle} />
+          <input name="mobile_no" value={student.mobile_no} onChange={handleChange} placeholder="Mobile No" style={inputStyle} />
+          <input name="gender" value={student.gender} onChange={handleChange} placeholder="Gender" style={inputStyle} />
+          <input name="address" value={student.address} onChange={handleChange} placeholder="Address" style={inputStyle} />
+
+          <input type="date" name="dob" value={student.dob} onChange={handleChange} style={inputStyle} />
+          <input name="email" value={student.email} onChange={handleChange} placeholder="Email" style={inputStyle} />
+          <input type="date" name="admission_date" value={student.admission_date} onChange={handleChange} style={inputStyle} />
+
+          <input name="status" value={student.status} onChange={handleChange} placeholder="Status" style={inputStyle} />
+          <input name="roll_no" value={student.roll_no} onChange={handleChange} placeholder="Roll No" style={inputStyle} />
+          <input name="user_id" value={student.user_id} onChange={handleChange} placeholder="User ID" style={inputStyle} />
+
+          <button type="submit" style={buttonStyle}>
+            Save Student
+          </button>
+
+        </form>
+      </div>
+    </div>
+  );
+}
+
+/* styles */
+const pageStyle = {
+  display: "flex",
+  justifyContent: "center",
+  padding: "20px",
+  background: "#f4f4f4",
+};
+
+const cardStyle = {
+  background: "#fff",
+  padding: "20px",
+  borderRadius: "10px",
+  width: "400px",
+  boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+};
+
+const formStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "10px",
+};
+
+const inputStyle = {
+  padding: "10px",
+  border: "1px solid #ccc",
+  borderRadius: "5px",
+};
+
+const buttonStyle = {
+  padding: "10px",
+  background: "black",
+  color: "white",
+  border: "none",
+  cursor: "pointer",
+  borderRadius: "5px",
+};
+
+export default Student;
