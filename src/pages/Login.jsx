@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 37e07997a82859b9e2b7fb9b7b43176546ac3611
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -35,6 +38,10 @@ const Login = () => {
             alert("Login Failed: Invalid email or password!");
         }
     };
+<<<<<<< HEAD
+=======
+
+>>>>>>> 37e07997a82859b9e2b7fb9b7b43176546ac3611
     return (
         <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
             <h2>User Login</h2>
