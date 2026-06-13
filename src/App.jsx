@@ -6,10 +6,11 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 
-// Yahan aapko baaki components bhi import karne honge
+// Components Imports
 import Student from "./pages/Student";
 import Staff from "./pages/Staff";
 import Course from "./pages/Course";
+import Subject from "./pages/Subject"; // Subject Import Add Kiya
 import Result from "./pages/Result";
 import Attendance from "./pages/Attendance";
 import Fees from "./pages/Fees";
@@ -24,7 +25,6 @@ import CompanyPlacement from "./pages/CompanyPlacement";
 function App() {
   return (
     <BrowserRouter>
-      {/* ... baaki code same rahega ... */}
       <nav style={{ padding: '10px', background: '#f4f4f4', marginBottom: '20px' }}>
         <Link to="/" style={{ marginRight: '15px' }}>Login</Link>
         <Link to="/register">Register</Link>
@@ -39,6 +39,7 @@ function App() {
         <Route path="/student" element={<ProtectedRoute><Student /></ProtectedRoute>} />
         <Route path="/staff" element={<ProtectedRoute><Staff /></ProtectedRoute>} />
         <Route path="/course" element={<ProtectedRoute><Course /></ProtectedRoute>} />
+        <Route path="/subject" element={<ProtectedRoute><Subject /></ProtectedRoute>} /> {/* Subject Route Add Kiya */}
         <Route path="/result" element={<ProtectedRoute><Result /></ProtectedRoute>} />
         <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
         <Route path="/fees" element={<ProtectedRoute><Fees /></ProtectedRoute>} />

@@ -7,6 +7,7 @@ function Dashboard() {
     { name: "Student", path: "/student" },
     { name: "Staff", path: "/staff" },
     { name: "Course", path: "/course" },
+    { name: "Subject", path: "/subject" }, // Naya Subject module yahan add kiya
     { name: "Result", path: "/result" },
     { name: "Attendance", path: "/attendance" },
     { name: "Book Issue", path: "/book-issue" },
