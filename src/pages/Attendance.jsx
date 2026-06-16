@@ -3,11 +3,7 @@ import axios from "axios";
 
 function Attendance() {
   const [formData, setFormData] = useState({
-    userid: "",
-    attendancedate: "",
-    intime: "",
-    outtime: "",
-    status: ""
+    userid: "", attendancedate: "", intime: "", outtime: ""
   });
 
   const cardStyle = { padding: "20px", border: "1px solid #ccc", borderRadius: "8px", maxWidth: "400px", margin: "20px auto", boxShadow: "0 4px 8px rgba(0,0,0,0.1)" };
@@ -17,23 +13,21 @@ function Attendance() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Data ko clean karke bhejen
     const dataToSend = {
       userid: parseInt(formData.userid),
-      attendancedate: formData.attendancedate,
-      intime: formData.intime,
-      outtime: formData.outtime,
-      status: formData.status
+      attendancedate: formData.attendancedate, // HTML Date default "yyyy-MM-dd" hi deta hai
+      intime: formData.intime, // HTML Time "HH:mm" format mein hota hai
+      outtime: formData.outtime
     };
 
     try {
-      await axios.post("http://localhost:8080/api/attendance", dataToSend);
-      alert("Attendance Saved!");
-
-      // Form reset
-      setFormData({ userid: "", attendancedate: "", intime: "", outtime: "", status: "" });
+      await axios.post("http://localhost:8080/api/attendance/save", dataToSend);
+      alert("Attendance Saved Successfully!");
+      setFormData({ userid: "", attendancedate: "", intime: "", outtime: "" });
     } catch (error) {
-      console.error("Backend Error Response:", error.response?.data);
-      alert("Error: Save nahi hua. Console check karein.");
+      console.error("Backend Error:", error.response?.data);
+      alert("Error: Data save nahi hua! Console check karein.");
     }
   };
 
@@ -46,11 +40,9 @@ function Attendance() {
           <input style={inputStyle} type="date" value={formData.attendancedate} onChange={(e) => setFormData({...formData, attendancedate: e.target.value})} required />
           <input style={inputStyle} type="time" value={formData.intime} onChange={(e) => setFormData({...formData, intime: e.target.value})} required />
           <input style={inputStyle} type="time" value={formData.outtime} onChange={(e) => setFormData({...formData, outtime: e.target.value})} required />
-          <input style={inputStyle} type="text" placeholder="Status (Present/Absent)" value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})} required />
           <button type="submit" style={buttonStyle}>Save Attendance</button>
         </form>
       </div>
-      {/* Table wala code yahan se hat gaya hai, ab wo niche nahi dikhega */}
     </div>
   );
 }

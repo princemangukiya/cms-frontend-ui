@@ -17,13 +17,15 @@ function Result() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Backend ke structure (Entity) ke hisab se Payload prepare karna
+    // Payload ko aapki Entity structure ke mutabik set kiya gaya hai.
+    // Yahan student_id aur subject_id keys ka istemal kiya hai
+    // taaki wo backend ke Student aur Subject objects ke primary keys se match kare.
     const payload = {
       totalMarks: parseInt(result.totalMarks),
       grade: result.grade,
       status: result.status,
-      student: { studentId: parseInt(result.studentId) }, // Object nested structure
-      subject: { subjectId: parseInt(result.subjectId) }  // Object nested structure
+      student: { student_id: parseInt(result.studentId) },
+      subject: { subject_id: parseInt(result.subjectId) }
     };
 
     console.log("Sending to Backend:", JSON.stringify(payload));
@@ -61,6 +63,7 @@ function Result() {
   );
 }
 
+// Styles
 const pageStyle = { padding: "20px", display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", background: "#f4f4f4" };
 const cardStyle = { background: "white", padding: "30px", borderRadius: "10px", width: "400px", boxShadow: "0 0 10px rgba(0,0,0,0.1)" };
 const inputStyle = { padding: "10px", borderRadius: "5px", border: "1px solid #ccc", width: "100%", boxSizing: "border-box" };

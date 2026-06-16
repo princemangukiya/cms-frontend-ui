@@ -19,24 +19,25 @@ const BookIssue = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Data ko backend ke format mein convert karna
+    // Payload keys ab aapki Updated Entity ke camelCase names se match karti hain
     const payload = {
       bookId: formData.bookId ? parseInt(formData.bookId) : null,
       userId: formData.userId ? parseInt(formData.userId) : null,
-      issueDate: formData.issueDate, // Date format yyyy-MM-dd input type="date" se mil jata hai
+      issueDate: formData.issueDate,
       fine: formData.fine ? parseFloat(formData.fine) : 0.0,
       reason: formData.reason
     };
 
     try {
-      const response = await axios.post('http://localhost:8080/api/book-issues', payload);
-      console.log("Success:", response.data);
+      // Backend API call
+      await axios.post('http://localhost:8080/api/book-issues', payload);
       alert("Book Issued Successfully!");
+
       // Form reset
       setFormData({ bookId: '', userId: '', issueDate: '', fine: '', reason: '' });
     } catch (error) {
       console.error("Error details:", error.response?.data || error.message);
-      alert("Failed to save data. Error: " + (error.response?.data?.message || "Server Error 500"));
+      alert("Error: Data save nahi hua. Check console.");
     }
   };
 
