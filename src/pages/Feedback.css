@@ -1,0 +1,72 @@
+/* Feedback.css - Full Corrected Version */
+
+.feedback-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  background: #f0f2f5;
+  padding: 20px;
+}
+
+.feedback-card {
+  background: #fff;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  width: 100%;
+  max-width: 450px;
+}
+
+.card-header h2 { margin: 0; color: #1a1a1a; }
+.card-header p { color: #666; margin-bottom: 25px; }
+
+/* Input aur Dropdown ko ek row mein barabar rakhne ke liye */
+.row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 5px;
+}
+
+/* Input, Select, aur Textarea sabke liye uniform design */
+input, select, textarea {
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 15px;
+  border: 2px solid #edf2f7;
+  border-radius: 10px;
+  font-size: 14px;
+  transition: 0.3s;
+  box-sizing: border-box; /* Yeh zaroori hai width sahi rakhne ke liye */
+  background-color: white;
+}
+
+/* Row ke andar dono fields ko 50-50% width milegi */
+.row input, .row select {
+  flex: 1;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #6c5ce7;
+}
+
+/* Button ki styling (Input fields se match karti hui) */
+.submit-btn {
+  width: 100%;
+  padding: 12px 15px;
+  background: #6c5ce7; /* Solid color dashboard theme ke liye */
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 15px;
+}
+
+.submit-btn:hover {
+  background: #5b4bc4;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+}
