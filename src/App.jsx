@@ -10,7 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Student from "./pages/Student";
 import Staff from "./pages/Staff";
 import Course from "./pages/Course";
-import Subject from "./pages/Subject"; // Subject Import Add Kiya
+import Subject from "./pages/Subject";
 import Result from "./pages/Result";
 import Attendance from "./pages/Attendance";
 import Fees from "./pages/Fees";
@@ -21,6 +21,7 @@ import Feedback from "./pages/Feedback";
 import Payment from "./pages/Payment";
 import Holiday from "./pages/Holiday";
 import CompanyPlacement from "./pages/CompanyPlacement";
+import ClassMgmt from "./pages/ClassMgmt"; // Yahan import add kiya
 
 function App() {
   return (
@@ -39,7 +40,7 @@ function App() {
         <Route path="/student" element={<ProtectedRoute><Student /></ProtectedRoute>} />
         <Route path="/staff" element={<ProtectedRoute><Staff /></ProtectedRoute>} />
         <Route path="/course" element={<ProtectedRoute><Course /></ProtectedRoute>} />
-        <Route path="/subject" element={<ProtectedRoute><Subject /></ProtectedRoute>} /> {/* Subject Route Add Kiya */}
+        <Route path="/subject" element={<ProtectedRoute><Subject /></ProtectedRoute>} />
         <Route path="/result" element={<ProtectedRoute><Result /></ProtectedRoute>} />
         <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
         <Route path="/fees" element={<ProtectedRoute><Fees /></ProtectedRoute>} />
@@ -50,6 +51,9 @@ function App() {
         <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
         <Route path="/holiday" element={<ProtectedRoute><Holiday /></ProtectedRoute>} />
         <Route path="/placement" element={<ProtectedRoute><CompanyPlacement /></ProtectedRoute>} />
+
+        {/* Yahan ClassMgmt ka route add kiya */}
+        <Route path="/class-mgmt" element={<ProtectedRoute><ClassMgmt /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );
