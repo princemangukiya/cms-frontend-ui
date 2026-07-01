@@ -1,18 +1,113 @@
-import React from 'react';
+import { useState } from "react";
+import axios from "axios";
+import "./Holiday.css";
 
-const Holiday = () => {
+function Holiday() {
+  const [holiday, setHoliday] = useState({
+    holidayId: "",
+    holidayDate: "",
+    holidayName: "",
+  });
+
+  const handleChange = (e) => {
+    setHoliday({
+      ...holiday,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const saveHoliday = async (e) => {
+    e.preventDefault();
+
+    if (!holiday.holidayDate || !holiday.holidayName) {
+      alert("Please fill all fields.");
+      return;
+    }
+
+    try {
+      await axios.post("http://localhost:8080/api/holidays", holiday);
+
+      alert("Holiday save Successfully!");
+
+      setHoliday({
+        holidayId: "",
+        holidayDate: "",
+        holidayName: "",
+      });
+
+    } catch (error) {
+      console.error(error);
+      alert("Failed to save holiday.");
+    }
+  };
+
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Holiday List 2026</h1>
-      <p>Aane wali chuttiyon ki jaankari yahan dekhein.</p>
+    <div className="holiday-page">
 
-      <ul style={{ marginTop: '20px' }}>
-        <li><strong>Independence Day:</strong> 15 August 2026</li>
-        <li><strong>Gandhi Jayanti:</strong> 2 October 2026</li>
-        <li><strong>Diwali:</strong> 10 November 2026</li>
-      </ul>
+      <div className="holiday-card">
+
+        <div className="holiday-header">
+          <h2>📅 Holiday Management</h2>
+          <p>Add Official College Holidays</p>
+        </div>
+
+        <form onSubmit={saveHoliday}>
+
+          <div className="input-row">
+
+            <div className="form-group">
+              <label>Holiday Date</label>
+              <input
+                type="date"
+                name="holidayDate"
+                value={holiday.holidayDate}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Holiday Name</label>
+              <input
+                type="text"
+                name="holidayName"
+                placeholder="Enter Holiday Name"
+                value={holiday.holidayName}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+          </div>
+
+          <div className="button-group">
+
+            <button className="save-btn">
+              💾 Save Holiday
+            </button>
+
+            <button
+              type="button"
+              className="reset-btn"
+              onClick={() =>
+                setHoliday({
+                  holidayId: "",
+                  holidayDate: "",
+                  holidayName: "",
+                })
+              }
+            >
+              🔄 Reset
+            </button>
+
+          </div>
+
+        </form>
+
+      </div>
+
     </div>
   );
-};
+}
 
 export default Holiday;
