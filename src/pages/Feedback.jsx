@@ -1,93 +1,181 @@
-import React, { useState } from 'react';
-import './Feedback.css';
-import axios from 'axios';
+import { useState } from "react";
+import axios from "axios";
 
 function Feedback() {
-  const [formData, setFormData] = useState({
-    feedback_from: '', // ID store hogi (e.g., "1")
-    feedback_to: '',   // Role name store hoga (e.g., "Professor")
-    feedback_rating: '',
-    feedback_message: ''
+
+  const [feedback, setFeedback] = useState({
+    feedbackFrom: "",
+    feedbackTo: "",
+    rating: "",
+    feedbackMessage: "",
   });
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFeedback({
+      ...feedback,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Database mein bheja gaya data:", formData);
 
     try {
-      // API call
-      await axios.post('http://localhost:8080/api/feedback/save', formData);
-      alert("Feedback saved successfully!");
 
-      // Form reset
-      setFormData({
-        feedback_from: '',
-        feedback_to: '',
-        feedback_rating: '',
-        feedback_message: ''
+      console.log(feedback);
+
+      const response = await axios.post(
+        "http://localhost:8080/api/feedback",
+        feedback
+      );
+
+      console.log(response.data);
+
+      alert("Feedback Saved Successfully!");
+
+      setFeedback({
+        feedbackFrom: "",
+        feedbackTo: "",
+        rating: "",
+        feedbackMessage: "",
       });
+
     } catch (error) {
-      console.error("Error saving feedback:", error);
-      alert("Failed to save feedback.");
+      console.error(error);
+      alert("Unable to Save Feedback");
     }
   };
 
   return (
-    <div className="feedback-wrapper">
-      <div className="feedback-card">
-        <div className="card-header">
-          <h2>Share Your Feedback</h2>
-          <p>We value your opinion!</p>
-        </div>
-        <form className="feedback-form" onSubmit={handleSubmit}>
+    <div style={styles.container}>
+      <div style={styles.card}>
 
-          <div className="row">
-            {/* From Dropdown: Label mein sirf Name, Value mein ID */}
-            <select name="feedback_from" value={formData.feedback_from} onChange={handleChange} required>
-              <option value="">From (Select Role)</option>
-              <option value="1">Student</option>
-              <option value="2">Professor</option>
-              <option value="3">HOD</option>
-              <option value="4">Principle</option>
-            </select>
+        <h2 style={styles.heading}>Feedback Management</h2>
 
-            {/* To Dropdown: Value mein Role Name */}
-            <select name="feedback_to" value={formData.feedback_to} onChange={handleChange} required>
-              <option value="">To (Select Role)</option>
-              <option value="Professor">Professor</option>
-              <option value="HOD">HOD</option>
-              <option value="Principle">Principle</option>
-              <option value="Student">Student</option>
-            </select>
-          </div>
+        <form onSubmit={handleSubmit}>
 
-          <input
-            type="number"
-            name="feedback_rating"
-            placeholder="Rating (1-5)"
-            min="1" max="5"
-            value={formData.feedback_rating}
+          <select
+            name="feedbackFrom"
+            value={feedback.feedbackFrom}
             onChange={handleChange}
+            style={styles.input}
             required
-          />
+          >
+            <option value="">Feedback From</option>
+            <option value="1">HOD</option>
+            <option value="2">Principal</option>
+            <option value="3">Professor</option>
+            <option value="4">Student</option>
+          </select>
+
+          <select
+            name="feedbackTo"
+            value={feedback.feedbackTo}
+            onChange={handleChange}
+            style={styles.input}
+            required
+          >
+            <option value="">Feedback To</option>
+            <option value="1">HOD</option>
+            <option value="2">Principal</option>
+            <option value="3">Professor</option>
+            <option value="4">Student</option>
+          </select>
+
+          <select
+            name="rating"
+            value={feedback.rating}
+            onChange={handleChange}
+            style={styles.input}
+            required
+          >
+            <option value="">Select Rating</option>
+            <option value="1">⭐ 1</option>
+            <option value="2">⭐⭐ 2</option>
+            <option value="3">⭐⭐⭐ 3</option>
+            <option value="4">⭐⭐⭐⭐ 4</option>
+            <option value="5">⭐⭐⭐⭐⭐ 5</option>
+          </select>
 
           <textarea
-            name="feedback_message"
-            placeholder="How was your experience?"
-            value={formData.feedback_message}
+            name="feedbackMessage"
+            value={feedback.feedbackMessage}
             onChange={handleChange}
+            placeholder="Enter Feedback Message"
+            style={styles.textarea}
             required
           />
 
-          <button type="submit" className="submit-btn">Save Feedback</button>
+          <button type="submit" style={styles.button}>
+            Save Feedback
+          </button>
+
         </form>
+
       </div>
     </div>
   );
 }
+
+const styles = {
+  container: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: "30px",
+  },
+
+  card: {
+    width: "430px",
+    background: "#ffffff",
+    padding: "25px",
+    borderRadius: "12px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+  },
+
+  heading: {
+    textAlign: "center",
+    marginBottom: "20px",
+    fontSize: "24px",
+    fontWeight: "bold",
+    color: "#333",
+  },
+
+  input: {
+    width: "100%",
+    padding: "12px",
+    marginBottom: "15px",
+    border: "1px solid #ccc",
+    borderRadius: "5px",
+    fontSize: "15px",
+    boxSizing: "border-box",
+    outline: "none",
+  },
+
+  textarea: {
+    width: "100%",
+    height: "120px",
+    padding: "12px",
+    marginBottom: "20px",
+    border: "1px solid #ccc",
+    borderRadius: "5px",
+    fontSize: "15px",
+    resize: "none",
+    boxSizing: "border-box",
+    outline: "none",
+  },
+
+  button: {
+    width: "100%",
+    padding: "12px",
+    backgroundColor: "#000",
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    cursor: "pointer",
+  },
+};
 
 export default Feedback;
