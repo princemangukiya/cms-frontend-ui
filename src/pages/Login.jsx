@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom'; // Link import kiya
+import { useNavigate, Link } from 'react-router-dom'; // Link yahan import hua
 
 const Login = () => {
     const navigate = useNavigate();
@@ -18,6 +18,7 @@ const Login = () => {
         e.preventDefault();
         try {
             const response = await axios.post('http://localhost:8080/api/users/login', loginData);
+
             if (response.data) {
                 localStorage.setItem("user", JSON.stringify(response.data));
                 alert("Login Successful!");
@@ -58,14 +59,13 @@ const Login = () => {
                 <form onSubmit={handleLogin}>
                     <input type="email" name="emailId" placeholder="Email Address" value={loginData.emailId} onChange={handleChange} required style={styles.input} />
                     <input type="password" name="password" placeholder="Password" value={loginData.password} onChange={handleChange} required style={styles.input} />
-                    <button type="submit" style={styles.button} onMouseOver={(e) => e.target.style.background = '#5a377d'} onMouseOut={(e) => e.target.style.background = '#764ba2'}>
-                        Login Now
-                    </button>
+                    <button type="submit" style={styles.button}>Login Now</button>
                 </form>
-                {/* Register Link Added Here */}
-                <p style={{ marginTop: '20px', color: '#666' }}>
-                    Don't have an account? <Link to="/register" style={{ color: '#764ba2', fontWeight: 'bold' }}>Register here</Link>
-                </p>
+
+                {/* YE LINE ADD KI GAYI HAI */}
+                <div style={{ marginTop: '20px', fontSize: '14px', color: '#666' }}>
+                    Don't have an account? <Link to="/register" style={{ color: '#764ba2', fontWeight: 'bold' }}>Register</Link>
+                </div>
             </div>
         </div>
     );

@@ -2,20 +2,24 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const Library = () => {
+const PlacementStudent = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    bookname: "", authorname: "", booklanguage: "", totalbook: "", bookprice: ""
+    company_id: "", student_id: "", interview_date: "", status: "",
   });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:8080/api/library/save", formData);
-      alert("Book Details Saved Successfully!");
-      setFormData({ bookname: "", authorname: "", booklanguage: "", totalbook: "", bookprice: "" });
+      await axios.post("http://localhost:8080/api/placement/save", formData);
+      alert("Placement Details Saved Successfully!");
+      setFormData({ company_id: "", student_id: "", interview_date: "", status: "" });
     } catch (error) {
-      alert("Error: Save nahi hua. Console check karein (F12).");
+      alert("Failed to save data.");
     }
   };
 
@@ -23,41 +27,38 @@ const Library = () => {
     <div style={styles.page}>
       <div style={styles.card}>
         <div style={styles.header}>
-          <h2 style={{ margin: 0 }}>Library Management</h2>
-          <p style={{ margin: "5px 0 0 0", opacity: 0.8 }}>Add New Book Details</p>
+          <h2 style={{ margin: 0 }}>Placement Management</h2>
+          <p style={{ margin: "5px 0 0 0", opacity: 0.8 }}>Add Student Placement Details</p>
         </div>
 
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.grid}>
             <div style={styles.fieldWrapper}>
-              <label style={styles.label}>Book Name</label>
-              <input type="text" placeholder="Enter Book Name" value={formData.bookname} onChange={(e) => setFormData({...formData, bookname: e.target.value})} style={styles.input} required />
+              <label style={styles.label}>Company ID</label>
+              <input type="number" name="company_id" value={formData.company_id} onChange={handleChange} style={styles.input} required />
             </div>
-
             <div style={styles.fieldWrapper}>
-              <label style={styles.label}>Author Name</label>
-              <input type="text" placeholder="Enter Author Name" value={formData.authorname} onChange={(e) => setFormData({...formData, authorname: e.target.value})} style={styles.input} required />
+              <label style={styles.label}>Student ID</label>
+              <input type="number" name="student_id" value={formData.student_id} onChange={handleChange} style={styles.input} required />
             </div>
-
             <div style={styles.fieldWrapper}>
-              <label style={styles.label}>Language</label>
-              <input type="text" placeholder="Enter Language" value={formData.booklanguage} onChange={(e) => setFormData({...formData, booklanguage: e.target.value})} style={styles.input} required />
+              <label style={styles.label}>Interview Date</label>
+              <input type="date" name="interview_date" value={formData.interview_date} onChange={handleChange} style={styles.input} required />
             </div>
-
             <div style={styles.fieldWrapper}>
-              <label style={styles.label}>Total Books</label>
-              <input type="number" placeholder="Enter Total Count" value={formData.totalbook} onChange={(e) => setFormData({...formData, totalbook: e.target.value})} style={styles.input} required />
-            </div>
-
-            <div style={{ ...styles.fieldWrapper, gridColumn: "span 2" }}>
-              <label style={styles.label}>Book Price</label>
-              <input type="number" placeholder="Enter Price" value={formData.bookprice} onChange={(e) => setFormData({...formData, bookprice: e.target.value})} style={styles.input} required />
+              <label style={styles.label}>Status</label>
+              <select name="status" value={formData.status} onChange={handleChange} style={styles.input} required>
+                <option value="">Select Status</option>
+                <option value="Selected">Selected</option>
+                <option value="Pending">Pending</option>
+                <option value="Rejected">Rejected</option>
+              </select>
             </div>
           </div>
 
           <div style={styles.buttonGroup}>
             <button type="button" onClick={() => navigate('/dashboard')} style={styles.backButton}>Back</button>
-            <button type="submit" style={styles.saveButton}>Save Book</button>
+            <button type="submit" style={styles.saveButton}>Save Details</button>
           </div>
         </form>
       </div>
@@ -79,4 +80,4 @@ const styles = {
   backButton: { padding: "12px 40px", background: "#e74c3c", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }
 };
 
-export default Library;
+export default PlacementStudent;

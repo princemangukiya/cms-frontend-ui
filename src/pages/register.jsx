@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom'; // 1. Link import kiya
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -29,7 +30,6 @@ const Register = () => {
         }
     };
 
-    // Inline styles for a modern, clean look
     const styles = {
         container: {
             display: 'flex', justifyContent: 'center', alignItems: 'center',
@@ -47,12 +47,20 @@ const Register = () => {
             width: '100%', padding: '12px', background: '#4a90e2', color: 'white',
             border: 'none', borderRadius: '10px', fontSize: '16px', cursor: 'pointer',
             transition: '0.3s', fontWeight: 'bold'
+        },
+        // 2. Naya style add kiya
+        backLink: {
+            display: 'block', textAlign: 'left', marginBottom: '15px',
+            color: '#333', textDecoration: 'none', fontSize: '14px', fontWeight: 'bold'
         }
     };
 
     return (
         <div style={styles.container}>
             <div style={styles.card}>
+                {/* 3. Link component add kiya */}
+                <Link to="/" style={styles.backLink}>← Back to Login</Link>
+
                 <h2 style={{ marginBottom: '25px', color: '#333' }}>Create Account</h2>
                 <form onSubmit={handleSubmit}>
                     <input style={styles.input} name="full_name" value={formData.full_name} placeholder="Full Name" onChange={handleChange} required />

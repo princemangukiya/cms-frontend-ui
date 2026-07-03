@@ -1,7 +1,9 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function Subject() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     subjectName: "", subjectCode: "", subjectCredit: "", subjectType: "", courseId: "", examId: ""
   });
@@ -12,8 +14,6 @@ function Subject() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Yahi payload structure backend mein @JsonProperty ke sath match hoga
     const payload = {
         subjectName: formData.subjectName,
         subjectCode: formData.subjectCode,
@@ -33,22 +33,43 @@ function Subject() {
   };
 
   return (
-    <div style={{ padding: "40px", maxWidth: "500px", margin: "auto" }}>
-      <h2 style={{ textAlign: "center" }}>Add New Subject</h2>
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-        <input name="subjectName" placeholder="Subject Name" onChange={handleChange} value={formData.subjectName} required style={inputStyle} />
-        <input name="subjectCode" placeholder="Subject Code" onChange={handleChange} value={formData.subjectCode} required style={inputStyle} />
-        <input name="subjectCredit" type="number" placeholder="Subject Credit" onChange={handleChange} value={formData.subjectCredit} required style={inputStyle} />
-        <input name="subjectType" placeholder="Subject Type" onChange={handleChange} value={formData.subjectType} required style={inputStyle} />
-        <input name="courseId" type="number" placeholder="Course ID" onChange={handleChange} value={formData.courseId} required style={inputStyle} />
-        <input name="examId" type="number" placeholder="Exam ID" onChange={handleChange} value={formData.examId} required style={inputStyle} />
-        <button type="submit" style={buttonStyle}>Save Subject</button>
-      </form>
+    <div style={styles.page}>
+      <div style={styles.card}>
+        <div style={styles.header}>
+          <h2 style={{ margin: 0 }}>Subject Management</h2>
+          <p style={{ margin: "5px 0 0 0", opacity: 0.8 }}>Add New Subject Details</p>
+        </div>
+
+        <form onSubmit={handleSubmit} style={styles.form}>
+          <div style={styles.grid}>
+            <input name="subjectName" placeholder="Subject Name" onChange={handleChange} value={formData.subjectName} required style={styles.input} />
+            <input name="subjectCode" placeholder="Subject Code" onChange={handleChange} value={formData.subjectCode} required style={styles.input} />
+            <input name="subjectCredit" type="number" placeholder="Subject Credit" onChange={handleChange} value={formData.subjectCredit} required style={styles.input} />
+            <input name="subjectType" placeholder="Subject Type" onChange={handleChange} value={formData.subjectType} required style={styles.input} />
+            <input name="courseId" type="number" placeholder="Course ID" onChange={handleChange} value={formData.courseId} required style={styles.input} />
+            <input name="examId" type="number" placeholder="Exam ID" onChange={handleChange} value={formData.examId} required style={styles.input} />
+          </div>
+
+          <div style={styles.buttonGroup}>
+            <button type="button" onClick={() => navigate('/dashboard')} style={styles.backButton}>Back</button>
+            <button type="submit" style={styles.saveButton}>Save Subject</button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
 
-const inputStyle = { padding: "10px", borderRadius: "5px", border: "1px solid #ccc" };
-const buttonStyle = { padding: "12px", background: "#333", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer" };
+const styles = {
+  page: { minHeight: "100vh", background: "#f0f2f5", padding: "40px", display: "flex", justifyContent: "center" },
+  card: { width: "100%", maxWidth: "800px", background: "#fff", borderRadius: "15px", overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" },
+  header: { background: "#4a90e2", padding: "30px", color: "#fff", textAlign: "center" },
+  form: { padding: "30px" },
+  grid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" },
+  input: { padding: "12px", borderRadius: "8px", border: "1px solid #ddd", fontSize: "14px", width: "100%", boxSizing: "border-box" },
+  buttonGroup: { display: "flex", gap: "15px", marginTop: "30px", justifyContent: "center" },
+  saveButton: { padding: "12px 40px", background: "#4a90e2", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" },
+  backButton: { padding: "12px 40px", background: "#e74c3c", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }
+};
 
 export default Subject;

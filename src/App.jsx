@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom"; // Link remove kiya
+
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./pages/ProtectedRoute";
 
 // Imports...
@@ -19,12 +20,12 @@ import Feedback from "./pages/Feedback";
 import Payment from "./pages/Payment";
 import Holiday from "./pages/Holiday";
 import CompanyPlacement from "./pages/CompanyPlacement";
+import PlacementStudent from "./pages/PlacementStudent"; // Import added
 import ClassMgmt from "./pages/ClassMgmt";
 
 function App() {
   return (
     <BrowserRouter>
-      {/* Nav bar removed */}
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -43,10 +44,10 @@ function App() {
         <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
         <Route path="/holiday" element={<ProtectedRoute><Holiday /></ProtectedRoute>} />
         <Route path="/placement" element={<ProtectedRoute><CompanyPlacement /></ProtectedRoute>} />
+        <Route path="/placement-student" element={<ProtectedRoute><PlacementStudent /></ProtectedRoute>} />
         <Route path="/class-mgmt" element={<ProtectedRoute><ClassMgmt /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );
 }
-
 export default App;

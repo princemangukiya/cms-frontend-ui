@@ -1,13 +1,11 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function Result() {
+  const navigate = useNavigate();
   const [result, setResult] = useState({
-    studentId: "",
-    subjectId: "",
-    totalMarks: "",
-    grade: "",
-    status: "",
+    studentId: "", subjectId: "", totalMarks: "", grade: "", status: "",
   });
 
   const handleChange = (e) => {
@@ -16,10 +14,6 @@ function Result() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Payload ko aapki Entity structure ke mutabik set kiya gaya hai.
-    // Yahan student_id aur subject_id keys ka istemal kiya hai
-    // taaki wo backend ke Student aur Subject objects ke primary keys se match kare.
     const payload = {
       totalMarks: parseInt(result.totalMarks),
       grade: result.grade,
@@ -28,8 +22,6 @@ function Result() {
       subject: { subject_id: parseInt(result.subjectId) }
     };
 
-    console.log("Sending to Backend:", JSON.stringify(payload));
-
     try {
       await axios.post("http://localhost:8080/api/results/save", payload, {
         headers: { "Content-Type": "application/json" }
@@ -37,36 +29,51 @@ function Result() {
       alert("Result Saved Successfully!");
       setResult({ studentId: "", subjectId: "", totalMarks: "", grade: "", status: "" });
     } catch (error) {
-      console.error("Error:", error.response?.data || error.message);
       alert("Failed to save. Check console for error details!");
     }
   };
 
   return (
-    <div style={pageStyle}>
-      <div style={cardStyle}>
-        <h1 style={{ marginBottom: "20px", fontSize: "24px", textAlign: "center" }}>Result Management</h1>
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-          <input type="number" name="studentId" placeholder="Student ID" value={result.studentId} onChange={handleChange} style={inputStyle} required />
-          <input type="number" name="subjectId" placeholder="Subject ID" value={result.subjectId} onChange={handleChange} style={inputStyle} required />
-          <input type="number" name="totalMarks" placeholder="Total Marks" value={result.totalMarks} onChange={handleChange} style={inputStyle} required />
-          <input type="text" name="grade" placeholder="Grade (A, B, C...)" value={result.grade} onChange={handleChange} style={inputStyle} required />
-          <select name="status" value={result.status} onChange={handleChange} style={inputStyle} required>
-            <option value="">Select Status</option>
-            <option value="Pass">Pass</option>
-            <option value="Fail">Fail</option>
-          </select>
-          <button type="submit" style={buttonStyle}>Save Result</button>
+    <div style={styles.page}>
+      <div style={styles.card}>
+        <div style={styles.header}>
+          <h2 style={{ margin: 0 }}>Result Management</h2>
+          <p style={{ margin: "5px 0 0 0", opacity: 0.8 }}>Manage Student Results</p>
+        </div>
+
+        <form onSubmit={handleSubmit} style={styles.form}>
+          <div style={styles.grid}>
+            <input type="number" name="studentId" placeholder="Student ID" value={result.studentId} onChange={handleChange} style={styles.input} required />
+            <input type="number" name="subjectId" placeholder="Subject ID" value={result.subjectId} onChange={handleChange} style={styles.input} required />
+            <input type="number" name="totalMarks" placeholder="Total Marks" value={result.totalMarks} onChange={handleChange} style={styles.input} required />
+            <input type="text" name="grade" placeholder="Grade (A, B, C...)" value={result.grade} onChange={handleChange} style={styles.input} required />
+            <select name="status" value={result.status} onChange={handleChange} style={styles.input} required>
+              <option value="">Select Status</option>
+              <option value="Pass">Pass</option>
+              <option value="Fail">Fail</option>
+            </select>
+          </div>
+
+          <div style={styles.buttonGroup}>
+            <button type="button" onClick={() => navigate('/dashboard')} style={styles.backButton}>Back</button>
+            <button type="submit" style={styles.saveButton}>Save Result</button>
+          </div>
         </form>
       </div>
     </div>
   );
 }
 
-// Styles
-const pageStyle = { padding: "20px", display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", background: "#f4f4f4" };
-const cardStyle = { background: "white", padding: "30px", borderRadius: "10px", width: "400px", boxShadow: "0 0 10px rgba(0,0,0,0.1)" };
-const inputStyle = { padding: "10px", borderRadius: "5px", border: "1px solid #ccc", width: "100%", boxSizing: "border-box" };
-const buttonStyle = { padding: "10px", background: "#222", color: "white", border: "none", borderRadius: "5px", cursor: "pointer", marginTop: "10px" };
+const styles = {
+  page: { minHeight: "100vh", background: "#f0f2f5", padding: "40px", display: "flex", justifyContent: "center" },
+  card: { width: "100%", maxWidth: "600px", background: "#fff", borderRadius: "15px", overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" },
+  header: { background: "#4a90e2", padding: "30px", color: "#fff", textAlign: "center" },
+  form: { padding: "30px" },
+  grid: { display: "flex", flexDirection: "column", gap: "20px" },
+  input: { padding: "12px", borderRadius: "8px", border: "1px solid #ddd", fontSize: "14px", width: "100%", boxSizing: "border-box" },
+  buttonGroup: { display: "flex", gap: "15px", marginTop: "30px", justifyContent: "center" },
+  saveButton: { padding: "12px 40px", background: "#4a90e2", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" },
+  backButton: { padding: "12px 40px", background: "#e74c3c", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }
+};
 
 export default Result;

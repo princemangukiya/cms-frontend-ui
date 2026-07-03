@@ -1,181 +1,100 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function Feedback() {
-
+  const navigate = useNavigate();
   const [feedback, setFeedback] = useState({
-    feedbackFrom: "",
-    feedbackTo: "",
-    rating: "",
-    feedbackMessage: "",
+    feedbackFrom: "", feedbackTo: "", rating: "", feedbackMessage: "",
   });
 
   const handleChange = (e) => {
-    setFeedback({
-      ...feedback,
-      [e.target.name]: e.target.value,
-    });
+    setFeedback({ ...feedback, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-
-      console.log(feedback);
-
-      const response = await axios.post(
-        "http://localhost:8080/api/feedback",
-        feedback
-      );
-
-      console.log(response.data);
-
+      await axios.post("http://localhost:8080/api/feedback", feedback);
       alert("Feedback Saved Successfully!");
-
-      setFeedback({
-        feedbackFrom: "",
-        feedbackTo: "",
-        rating: "",
-        feedbackMessage: "",
-      });
-
+      setFeedback({ feedbackFrom: "", feedbackTo: "", rating: "", feedbackMessage: "" });
     } catch (error) {
-      console.error(error);
       alert("Unable to Save Feedback");
     }
   };
 
   return (
-    <div style={styles.container}>
+    <div style={styles.page}>
       <div style={styles.card}>
+        <div style={styles.header}>
+          <h2 style={{ margin: 0 }}>Feedback Management</h2>
+          <p style={{ margin: "5px 0 0 0", opacity: 0.8 }}>Submit Your Feedback</p>
+        </div>
 
-        <h2 style={styles.heading}>Feedback Management</h2>
+        <form onSubmit={handleSubmit} style={styles.form}>
+          <div style={styles.grid}>
+            <div style={styles.fieldWrapper}>
+              <label style={styles.label}>Feedback From</label>
+              <select name="feedbackFrom" value={feedback.feedbackFrom} onChange={handleChange} style={styles.input} required>
+                <option value="">Select Role</option>
+                <option value="1">HOD</option>
+                <option value="2">Principal</option>
+                <option value="3">Professor</option>
+                <option value="4">Student</option>
+              </select>
+            </div>
 
-        <form onSubmit={handleSubmit}>
+            <div style={styles.fieldWrapper}>
+              <label style={styles.label}>Feedback To</label>
+              <select name="feedbackTo" value={feedback.feedbackTo} onChange={handleChange} style={styles.input} required>
+                <option value="">Select Role</option>
+                <option value="1">HOD</option>
+                <option value="2">Principal</option>
+                <option value="3">Professor</option>
+                <option value="4">Student</option>
+              </select>
+            </div>
 
-          <select
-            name="feedbackFrom"
-            value={feedback.feedbackFrom}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          >
-            <option value="">Feedback From</option>
-            <option value="1">HOD</option>
-            <option value="2">Principal</option>
-            <option value="3">Professor</option>
-            <option value="4">Student</option>
-          </select>
+            <div style={{ ...styles.fieldWrapper, gridColumn: "span 2" }}>
+              <label style={styles.label}>Rating</label>
+              <select name="rating" value={feedback.rating} onChange={handleChange} style={styles.input} required>
+                <option value="">Select Rating</option>
+                <option value="1">⭐ 1</option>
+                <option value="2">⭐⭐ 2</option>
+                <option value="3">⭐⭐⭐ 3</option>
+                <option value="4">⭐⭐⭐⭐ 4</option>
+                <option value="5">⭐⭐⭐⭐⭐ 5</option>
+              </select>
+            </div>
 
-          <select
-            name="feedbackTo"
-            value={feedback.feedbackTo}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          >
-            <option value="">Feedback To</option>
-            <option value="1">HOD</option>
-            <option value="2">Principal</option>
-            <option value="3">Professor</option>
-            <option value="4">Student</option>
-          </select>
+            <div style={{ ...styles.fieldWrapper, gridColumn: "span 2" }}>
+              <label style={styles.label}>Feedback Message</label>
+              <textarea name="feedbackMessage" value={feedback.feedbackMessage} onChange={handleChange} placeholder="Enter your feedback here..." style={{...styles.input, height: "100px", resize: "none"}} required />
+            </div>
+          </div>
 
-          <select
-            name="rating"
-            value={feedback.rating}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          >
-            <option value="">Select Rating</option>
-            <option value="1">⭐ 1</option>
-            <option value="2">⭐⭐ 2</option>
-            <option value="3">⭐⭐⭐ 3</option>
-            <option value="4">⭐⭐⭐⭐ 4</option>
-            <option value="5">⭐⭐⭐⭐⭐ 5</option>
-          </select>
-
-          <textarea
-            name="feedbackMessage"
-            value={feedback.feedbackMessage}
-            onChange={handleChange}
-            placeholder="Enter Feedback Message"
-            style={styles.textarea}
-            required
-          />
-
-          <button type="submit" style={styles.button}>
-            Save Feedback
-          </button>
-
+          <div style={styles.buttonGroup}>
+            <button type="button" onClick={() => navigate('/dashboard')} style={styles.backButton}>Back</button>
+            <button type="submit" style={styles.saveButton}>Save Feedback</button>
+          </div>
         </form>
-
       </div>
     </div>
   );
 }
 
 const styles = {
-  container: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: "30px",
-  },
-
-  card: {
-    width: "430px",
-    background: "#ffffff",
-    padding: "25px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-  },
-
-  heading: {
-    textAlign: "center",
-    marginBottom: "20px",
-    fontSize: "24px",
-    fontWeight: "bold",
-    color: "#333",
-  },
-
-  input: {
-    width: "100%",
-    padding: "12px",
-    marginBottom: "15px",
-    border: "1px solid #ccc",
-    borderRadius: "5px",
-    fontSize: "15px",
-    boxSizing: "border-box",
-    outline: "none",
-  },
-
-  textarea: {
-    width: "100%",
-    height: "120px",
-    padding: "12px",
-    marginBottom: "20px",
-    border: "1px solid #ccc",
-    borderRadius: "5px",
-    fontSize: "15px",
-    resize: "none",
-    boxSizing: "border-box",
-    outline: "none",
-  },
-
-  button: {
-    width: "100%",
-    padding: "12px",
-    backgroundColor: "#000",
-    color: "#fff",
-    border: "none",
-    borderRadius: "5px",
-    fontSize: "16px",
-    fontWeight: "bold",
-    cursor: "pointer",
-  },
+  page: { minHeight: "100vh", background: "#f0f2f5", padding: "40px", display: "flex", justifyContent: "center" },
+  card: { width: "100%", maxWidth: "600px", background: "#fff", borderRadius: "15px", overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" },
+  header: { background: "#4a90e2", padding: "30px", color: "#fff", textAlign: "center" },
+  form: { padding: "30px" },
+  grid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" },
+  fieldWrapper: { display: "flex", flexDirection: "column", gap: "5px" },
+  label: { fontSize: "12px", fontWeight: "bold", color: "#666" },
+  input: { padding: "12px", borderRadius: "8px", border: "1px solid #ddd", fontSize: "14px", width: "100%", boxSizing: "border-box" },
+  buttonGroup: { display: "flex", gap: "15px", marginTop: "30px", justifyContent: "center" },
+  saveButton: { padding: "12px 40px", background: "#4a90e2", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" },
+  backButton: { padding: "12px 40px", background: "#e74c3c", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }
 };
 
 export default Feedback;
