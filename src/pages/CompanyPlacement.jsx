@@ -163,7 +163,7 @@ function CompanyPlacement() {
               type="submit"
               className="save-btn"
             >
-              💾 Save Company
+              💾 Save Company Details
             </button>
 
             <button

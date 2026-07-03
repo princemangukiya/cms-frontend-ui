@@ -1,12 +1,10 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom"; // Link remove kiya
 import ProtectedRoute from "./pages/ProtectedRoute";
 
-// Pages Imports
+// Imports...
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-
-// Components Imports
 import Student from "./pages/Student";
 import Staff from "./pages/Staff";
 import Course from "./pages/Course";
@@ -21,21 +19,15 @@ import Feedback from "./pages/Feedback";
 import Payment from "./pages/Payment";
 import Holiday from "./pages/Holiday";
 import CompanyPlacement from "./pages/CompanyPlacement";
-import ClassMgmt from "./pages/ClassMgmt"; // Yahan import add kiya
+import ClassMgmt from "./pages/ClassMgmt";
 
 function App() {
   return (
     <BrowserRouter>
-      <nav style={{ padding: '10px', background: '#f4f4f4', marginBottom: '20px' }}>
-        <Link to="/" style={{ marginRight: '15px' }}>Login</Link>
-        <Link to="/register">Register</Link>
-        <Link to="/dashboard" style={{ marginLeft: '15px' }}>Dashboard</Link>
-      </nav>
-
+      {/* Nav bar removed */}
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/student" element={<ProtectedRoute><Student /></ProtectedRoute>} />
         <Route path="/staff" element={<ProtectedRoute><Staff /></ProtectedRoute>} />
@@ -51,8 +43,6 @@ function App() {
         <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
         <Route path="/holiday" element={<ProtectedRoute><Holiday /></ProtectedRoute>} />
         <Route path="/placement" element={<ProtectedRoute><CompanyPlacement /></ProtectedRoute>} />
-
-        {/* Yahan ClassMgmt ka route add kiya */}
         <Route path="/class-mgmt" element={<ProtectedRoute><ClassMgmt /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
