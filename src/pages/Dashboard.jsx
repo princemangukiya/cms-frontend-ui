@@ -1,9 +1,11 @@
-
 import React from 'react';
 import { useNavigate } from "react-router-dom";
 
 function Dashboard() {
   const navigate = useNavigate();
+
+  // 👤 user (optional display)
+  const user = JSON.parse(localStorage.getItem("user"));
 
   const menuItems = [
     { name: "Student", path: "/student" },
@@ -24,8 +26,16 @@ function Dashboard() {
     { name: "Placement Student", path: "/placement-student" },
   ];
 
+  // 🚪 LOGOUT FUNCTION (MAIN ADDITION)
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user"); // optional
+    navigate("/");
+  };
+
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#f4f4f4" }}>
+
       {/* Sidebar */}
       <div style={{
         width: "220px",
@@ -35,33 +45,43 @@ function Dashboard() {
         display: "flex",
         flexDirection: "column"
       }}>
+
         <h2>CMS Portal</h2>
-        <p style={{ cursor: "pointer", marginBottom: "auto" }} onClick={() => navigate("/dashboard")}>
+
+        {/* 👤 USER INFO */}
+        {user && (
+          <p style={{ fontSize: "14px", marginBottom: "10px", color: "#ccc" }}>
+            Welcome, {user.emailId}
+          </p>
+        )}
+
+        {/* HOME */}
+        <p
+          style={{ cursor: "pointer", marginBottom: "20px" }}
+          onClick={() => navigate("/dashboard")}
+        >
           Home Dashboard
         </p>
 
-        {/* Back to Login Section */}
+        {/* 🚪 LOGOUT BUTTON (NEW) */}
         <div
           style={{
-            marginTop: "20px",
-            paddingTop: "15px",
-            borderTop: "1px solid #555",
+            marginTop: "auto",
+            padding: "10px",
+            background: "#ff4d4d",
+            borderRadius: "8px",
             cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            color: "#ffcccc",
-            transition: "0.3s"
+            textAlign: "center",
+            fontWeight: "bold"
           }}
-          onMouseOver={(e) => e.currentTarget.style.color = "#fff"}
-          onMouseOut={(e) => e.currentTarget.style.color = "#ffcccc"}
-          onClick={() => navigate("/")}
+          onClick={handleLogout}
         >
-          <span>←</span> <strong>Back to Login</strong>
+          Logout
         </div>
+
       </div>
 
-      {/* Grid Content */}
+      {/* MAIN GRID */}
       <div style={{ flex: 1, padding: "40px" }}>
         <div style={{
           display: "grid",

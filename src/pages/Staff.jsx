@@ -5,16 +5,18 @@ import { useNavigate } from "react-router-dom";
 function Staff() {
   const navigate = useNavigate();
   const [staff, setStaff] = useState({
-    staffid: "", staffname: "", designation: "", mobileno: "",
-    gender: "", address: "", dob: "", email: "", joiningdate: "",
-    salary: "", userid: ""
+    staffname: "", designation: "", mobileno: "", gender: "",
+    address: "", dob: "", email: "", joiningdate: "",
+    salary: "", user_id: ""
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setStaff(prev => ({
       ...prev,
-      [name]: name === "salary" ? (value === "" ? "" : parseFloat(value)) : value
+      [name]: (name === "salary" || name === "user_id")
+              ? (value === "" ? null : parseInt(value))
+              : value
     }));
   };
 
@@ -24,49 +26,33 @@ function Staff() {
       await axios.post("http://localhost:8080/staff/add", staff);
       alert("Staff Saved Successfully!");
       setStaff({
-        staffid: "", staffname: "", designation: "", mobileno: "",
-        gender: "", address: "", dob: "", email: "", joiningdate: "",
-        salary: "", userid: ""
+        staffname: "", designation: "", mobileno: "", gender: "",
+        address: "", dob: "", email: "", joiningdate: "",
+        salary: "", user_id: ""
       });
     } catch (error) {
-      console.error("Error:", error);
-      alert("Error saving staff! Check console.");
+      console.error("Error details:", error.response?.data || error.message);
+      alert("Error! Check terminal for Foreign Key or Null constraint issues.");
     }
   };
 
   return (
     <div style={styles.page}>
       <div style={styles.card}>
-        <div style={styles.header}>
-          <h2 style={{ margin: 0 }}>Staff Management</h2>
-          <p style={{ margin: "5px 0 0 0", opacity: 0.8 }}>Manage Staff Details</p>
-        </div>
-
+        <div style={styles.header}><h2>Staff Management</h2></div>
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.grid}>
-            <input name="staffid" placeholder="Staff ID" value={staff.staffid} onChange={handleChange} style={styles.input} required />
             <input name="staffname" placeholder="Staff Name" value={staff.staffname} onChange={handleChange} style={styles.input} required />
             <input name="designation" placeholder="Designation" value={staff.designation} onChange={handleChange} style={styles.input} />
             <input name="mobileno" placeholder="Mobile No" value={staff.mobileno} onChange={handleChange} style={styles.input} />
             <input name="gender" placeholder="Gender" value={staff.gender} onChange={handleChange} style={styles.input} />
             <input name="address" placeholder="Address" value={staff.address} onChange={handleChange} style={styles.input} />
-
-            <div style={styles.fieldWrapper}>
-              <label style={styles.label}>Date of Birth</label>
-              <input type="date" name="dob" value={staff.dob} onChange={handleChange} style={styles.input} />
-            </div>
-
+            <input type="date" name="dob" value={staff.dob} onChange={handleChange} style={styles.input} />
             <input name="email" type="email" placeholder="Email" value={staff.email} onChange={handleChange} style={styles.input} />
-
-            <div style={styles.fieldWrapper}>
-              <label style={styles.label}>Joining Date</label>
-              <input type="date" name="joiningdate" value={staff.joiningdate} onChange={handleChange} style={styles.input} />
-            </div>
-
+            <input type="date" name="joiningdate" value={staff.joiningdate} onChange={handleChange} style={styles.input} />
             <input name="salary" type="number" placeholder="Salary" value={staff.salary} onChange={handleChange} style={styles.input} />
-            <input name="userid" placeholder="User ID" value={staff.userid} onChange={handleChange} style={styles.input} />
+            <input name="user_id" type="number" placeholder="User ID" value={staff.user_id} onChange={handleChange} style={styles.input} />
           </div>
-
           <div style={styles.buttonGroup}>
             <button type="button" onClick={() => navigate('/dashboard')} style={styles.backButton}>Back</button>
             <button type="submit" style={styles.saveButton}>Save Staff</button>
@@ -83,9 +69,7 @@ const styles = {
   header: { background: "#4a90e2", padding: "30px", color: "#fff", textAlign: "center" },
   form: { padding: "30px" },
   grid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" },
-  fieldWrapper: { display: "flex", flexDirection: "column", gap: "5px" },
-  label: { fontSize: "12px", fontWeight: "bold", color: "#666" },
-  input: { padding: "12px", borderRadius: "8px", border: "1px solid #ddd", fontSize: "14px", width: "100%", boxSizing: "border-box" },
+  input: { padding: "12px", borderRadius: "8px", border: "1px solid #ddd", width: "100%", boxSizing: "border-box" },
   buttonGroup: { display: "flex", gap: "15px", marginTop: "30px", justifyContent: "center" },
   saveButton: { padding: "12px 40px", background: "#4a90e2", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" },
   backButton: { padding: "12px 40px", background: "#e74c3c", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }
