@@ -54,7 +54,7 @@ const BookIssue = () => {
 
             <div style={{ ...styles.fieldWrapper, gridColumn: "span 2" }}>
               <label style={styles.label}>Reason for Issue</label>
-              <textarea name="reason" placeholder="Enter reason..." value={formData.reason} onChange={handleInputChange} style={{...styles.input, height: "80px"}} />
+              <textarea name="reason" placeholder="Enter Book Reason..." value={formData.reason} onChange={handleInputChange} style={{...styles.input, height: "80px"}} />
             </div>
           </div>
 
