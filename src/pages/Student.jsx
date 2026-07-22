@@ -75,13 +75,26 @@ function Student() {
 }
 
 const styles = {
-  page: { minHeight: "100vh", background: "#f0f2f5", padding: "40px", display: "flex", justifyContent: "center" },
+  // UPDATED: Background image with overlay
+  page: {
+    minHeight: "100vh",
+    // 1. Background Image path (must be in /public)
+    backgroundImage: "linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75)), url('/bg-student.jpg')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+    width: "100vw",
+    padding: "40px",
+    display: "flex",
+    justifyContent: "center",
+    boxSizing: "border-box"
+  },
   card: { width: "100%", maxWidth: "800px", background: "#fff", borderRadius: "15px", overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" },
   header: { background: "#4a90e2", padding: "30px", color: "#fff", textAlign: "center" },
   form: { padding: "30px" },
   grid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" },
-  fieldWrapper: { display: "flex", flexDirection: "column", gap: "5px" }, // Naya style
-  label: { fontSize: "12px", fontWeight: "bold", color: "#666" }, // Naya style
+  fieldWrapper: { display: "flex", flexDirection: "column", gap: "5px" },
+  label: { fontSize: "12px", fontWeight: "bold", color: "#666" },
   input: { padding: "12px", borderRadius: "8px", border: "1px solid #ddd", fontSize: "14px", width: "100%", boxSizing: "border-box" },
   buttonGroup: { display: "flex", gap: "15px", marginTop: "30px", justifyContent: "center" },
   saveButton: { padding: "12px 40px", background: "#4a90e2", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" },

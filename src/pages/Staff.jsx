@@ -64,7 +64,18 @@ function Staff() {
 }
 
 const styles = {
-  page: { minHeight: "100vh", background: "#f0f2f5", padding: "40px", display: "flex", justifyContent: "center" },
+  page: {
+    minHeight: "100vh",
+    backgroundImage: "linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75)), url('/bg-staff.jpg')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+    width: "100vw",
+    padding: "40px",
+    display: "flex",
+    justifyContent: "center",
+    boxSizing: "border-box"
+  },
   card: { width: "100%", maxWidth: "800px", background: "#fff", borderRadius: "15px", overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" },
   header: { background: "#4a90e2", padding: "30px", color: "#fff", textAlign: "center" },
   form: { padding: "30px" },

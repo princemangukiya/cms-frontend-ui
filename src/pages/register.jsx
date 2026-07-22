@@ -32,8 +32,17 @@ const Register = () => {
 
     const styles = {
         container: {
-            display: 'flex', justifyContent: 'center', alignItems: 'center',
-            minHeight: '100vh', background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)', padding: '20px'
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: '100vh',
+            backgroundImage: "url('/bg-collage.jpg')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            width: '100vw',
+            padding: '20px',
+            boxSizing: 'border-box'
         },
         card: {
             width: '100%', maxWidth: '400px', background: 'white', padding: '40px',
@@ -41,7 +50,7 @@ const Register = () => {
         },
         input: {
             width: '100%', padding: '12px', marginBottom: '15px', borderRadius: '10px',
-            border: '2px solid #eee', outline: 'none', transition: '0.3s'
+            border: '2px solid #eee', outline: 'none', transition: '0.3s', boxSizing: 'border-box'
         },
         button: {
             width: '100%', padding: '12px', background: '#4a90e2', color: 'white',

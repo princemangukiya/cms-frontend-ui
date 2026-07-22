@@ -48,8 +48,13 @@ const Login = () => {
             justifyContent: 'center',
             alignItems: 'center',
             minHeight: '100vh',
-            background: '#ffffff',
-            padding: '20px'
+            backgroundImage: "url('/bg-collage.jpg')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            width: '100vw',
+            padding: '20px',
+            boxSizing: 'border-box'
         },
         card: {
             width: '100%',
