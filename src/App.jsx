@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./pages/ProtectedRoute";
 
@@ -20,8 +19,10 @@ import Feedback from "./pages/Feedback";
 import Payment from "./pages/Payment";
 import Holiday from "./pages/Holiday";
 import CompanyPlacement from "./pages/CompanyPlacement";
-import PlacementStudent from "./pages/PlacementStudent"; // Import added
+import PlacementStudent from "./pages/PlacementStudent";
 import ClassMgmt from "./pages/ClassMgmt";
+import Sports from "./pages/Sports";
+import FunctionPage from "./pages/Function";
 
 function App() {
   return (
@@ -46,6 +47,8 @@ function App() {
         <Route path="/placement" element={<ProtectedRoute><CompanyPlacement /></ProtectedRoute>} />
         <Route path="/placement-student" element={<ProtectedRoute><PlacementStudent /></ProtectedRoute>} />
         <Route path="/class-mgmt" element={<ProtectedRoute><ClassMgmt /></ProtectedRoute>} />
+        <Route path="/sports" element={<ProtectedRoute><Sports /></ProtectedRoute>} />
+        <Route path="/function" element={<ProtectedRoute><FunctionPage /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );
