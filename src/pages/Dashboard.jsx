@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { FaUserGraduate, FaChalkboardTeacher, FaBook, FaBookOpen, FaChartBar, FaClipboardCheck, FaTasks, FaRegCalendarAlt, FaUniversity, FaDollarSign, FaSuitcase, FaBuilding, FaMoneyBillWave, FaComments, FaTrophy } from 'react-icons/fa';
+import TopBar from "../components/TopBar";
+import { useTheme } from "../context/ThemeContext";
 
 const moduleConfig = {
   Student: { icon: FaUserGraduate, color: "#7e22ce", bg: "#f3e8ff" },
@@ -23,6 +25,9 @@ const moduleConfig = {
 
 function Dashboard() {
   const navigate = useNavigate();
+  const { darkMode } = useTheme(); // Theme Hook Consume Kiya
+  const [searchTerm, setSearchTerm] = useState(''); // Live Search State
+
   const user = JSON.parse(localStorage.getItem("user"));
 
   const menuItems = [
@@ -44,6 +49,11 @@ function Dashboard() {
     { name: "Placement Student", path: "/placement-student" },
   ];
 
+  // Search Filter Logic
+  const filteredMenuItems = menuItems.filter((item) =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -51,14 +61,30 @@ function Dashboard() {
   };
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f1f5f9", margin: 0, fontFamily: "'Inter', sans-serif" }}>
-      {/* Sidebar with Sports and Function added */}
-      <div style={{ width: "260px", background: "#0f172a", color: "white", padding: "25px", display: "flex", flexDirection: "column", boxShadow: "4px 0 15px rgba(0,0,0,0.05)" }}>
+    <div style={{
+      display: "flex",
+      minHeight: "100vh",
+      background: darkMode ? "#0f172a" : "#f1f5f9", // Full Background Dark/Light Switch
+      color: darkMode ? "#f8fafc" : "#1e293b",
+      margin: 0,
+      fontFamily: "'Inter', sans-serif",
+      transition: "all 0.3s ease"
+    }}>
+      {/* Sidebar */}
+      <div style={{
+        width: "260px",
+        background: darkMode ? "#020617" : "#0f172a",
+        color: "white",
+        padding: "25px",
+        display: "flex",
+        flexDirection: "column",
+        boxShadow: "4px 0 15px rgba(0,0,0,0.05)"
+      }}>
         <h2 style={{ fontSize: "22px", marginBottom: "35px", color: "#ffffff", fontWeight: "700", letterSpacing: "0.5px" }}>CMS Portal</h2>
 
         {user && (
           <div style={{
-            background: "#1e293b",
+            background: darkMode ? "#0f172a" : "#1e293b",
             padding: "15px",
             borderRadius: "12px",
             marginBottom: "30px",
@@ -77,22 +103,16 @@ function Dashboard() {
             <FaChartBar size={16} /> Home Dashboard
           </div>
 
-          {/* Added Sports Menu */}
           <div
-            style={{ cursor: "pointer", fontSize: "14px", color: "#cbd5e1", padding: "12px 16px", background: "#1e293b", borderRadius: "8px", fontWeight: "500", display: "flex", alignItems: "center", gap: "12px", transition: "0.2s" }}
+            style={{ cursor: "pointer", fontSize: "14px", color: "#cbd5e1", padding: "12px 16px", background: darkMode ? "#0f172a" : "#1e293b", borderRadius: "8px", fontWeight: "500", display: "flex", alignItems: "center", gap: "12px", transition: "0.2s" }}
             onClick={() => navigate("/sports")}
-            onMouseOver={(e) => { e.currentTarget.style.background = "#334155"; e.currentTarget.style.color = "#fff"; }}
-            onMouseOut={(e) => { e.currentTarget.style.background = "#1e293b"; e.currentTarget.style.color = "#cbd5e1"; }}
           >
             <FaTrophy size={16} color="#eab308" /> Sports
           </div>
 
-          {/* Added Function Menu */}
           <div
-            style={{ cursor: "pointer", fontSize: "14px", color: "#cbd5e1", padding: "12px 16px", background: "#1e293b", borderRadius: "8px", fontWeight: "500", display: "flex", alignItems: "center", gap: "12px", transition: "0.2s" }}
+            style={{ cursor: "pointer", fontSize: "14px", color: "#cbd5e1", padding: "12px 16px", background: darkMode ? "#0f172a" : "#1e293b", borderRadius: "8px", fontWeight: "500", display: "flex", alignItems: "center", gap: "12px", transition: "0.2s" }}
             onClick={() => navigate("/function")}
-            onMouseOver={(e) => { e.currentTarget.style.background = "#334155"; e.currentTarget.style.color = "#fff"; }}
-            onMouseOut={(e) => { e.currentTarget.style.background = "#1e293b"; e.currentTarget.style.color = "#cbd5e1"; }}
           >
             <FaRegCalendarAlt size={16} color="#ec4899" /> Function
           </div>
@@ -107,95 +127,100 @@ function Dashboard() {
             borderRadius: "8px",
             cursor: "pointer",
             fontWeight: "600",
-            marginTop: "auto",
-            transition: "background 0.2s"
+            marginTop: "auto"
           }}
           onClick={handleLogout}
-          onMouseOver={(e) => e.currentTarget.style.background = "#dc2626"}
-          onMouseOut={(e) => e.currentTarget.style.background = "#ef4444"}
         >
           Logout
         </button>
       </div>
 
-      {/* Main Content */}
-      <div style={{ flex: 1, padding: "40px", overflowY: "auto" }}>
-        <div style={{ fontSize: "26px", fontWeight: "700", marginBottom: "30px", color: "#1e293b" }}>
+      {/* Main Content Area */}
+      <div style={{ flex: 1, padding: "30px 40px", overflowY: "auto" }}>
+
+        {/* TopBar with Search Props */}
+        <TopBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+
+        <div style={{ fontSize: "26px", fontWeight: "700", marginBottom: "30px", color: darkMode ? "#f8fafc" : "#1e293b" }}>
           Dashboard Overview
         </div>
 
+        {/* Dynamic Card Grid */}
         <div style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
           gap: "24px"
         }}>
-          {menuItems.map((item) => {
-            const config = moduleConfig[item.name] || moduleConfig.Student;
-            const IconComponent = config.icon;
+          {filteredMenuItems.length > 0 ? (
+            filteredMenuItems.map((item) => {
+              const config = moduleConfig[item.name] || moduleConfig.Student;
+              const IconComponent = config.icon;
 
-            return (
-              <div
-                key={item.name}
-                style={{
-                  background: "#ffffff",
-                  padding: "24px",
-                  borderRadius: "16px",
-                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  textAlign: "center",
-                  transition: "all 0.3s ease",
-                  border: "1px solid #e2e8f0",
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.transform = "translateY(-5px)";
-                  e.currentTarget.style.boxShadow = "0 12px 20px -3px rgba(0, 0, 0, 0.1)";
-                  e.currentTarget.style.borderColor = config.color;
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.05)";
-                  e.currentTarget.style.borderColor = "#e2e8f0";
-                }}
-              >
-                <div style={{
-                  background: config.bg,
-                  padding: "18px",
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginBottom: "16px"
-                }}>
-                  <IconComponent size={28} color={config.color} />
-                </div>
-
-                <h3 style={{ margin: "0 0 20px 0", fontSize: "18px", fontWeight: "600", color: "#1e293b" }}>{item.name}</h3>
-
-                <button
-                  onClick={() => navigate(item.path)}
+              return (
+                <div
+                  key={item.name}
                   style={{
-                    background: config.color,
-                    color: "white",
-                    border: "none",
-                    padding: "10px 16px",
-                    borderRadius: "8px",
-                    fontSize: "14px",
-                    fontWeight: "600",
-                    cursor: "pointer",
-                    width: "100%",
-                    transition: "opacity 0.2s"
+                    background: darkMode ? "#1e293b" : "#ffffff", // Dynamic Card Dark Mode
+                    padding: "24px",
+                    borderRadius: "16px",
+                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    textAlign: "center",
+                    transition: "all 0.3s ease",
+                    border: darkMode ? "1px solid #334155" : "1px solid #e2e8f0",
                   }}
-                  onMouseOver={(e) => e.currentTarget.style.opacity = "0.9"}
-                  onMouseOut={(e) => e.currentTarget.style.opacity = "1"}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = "translateY(-5px)";
+                    e.currentTarget.style.borderColor = config.color;
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.borderColor = darkMode ? "#334155" : "#e2e8f0";
+                  }}
                 >
-                  Add Detail
-                </button>
-              </div>
-            );
-          })}
+                  <div style={{
+                    background: darkMode ? "#334155" : config.bg,
+                    padding: "18px",
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: "16px"
+                  }}>
+                    <IconComponent size={28} color={config.color} />
+                  </div>
+
+                  <h3 style={{ margin: "0 0 20px 0", fontSize: "18px", fontWeight: "600", color: darkMode ? "#f8fafc" : "#1e293b" }}>
+                    {item.name}
+                  </h3>
+
+                  <button
+                    onClick={() => navigate(item.path)}
+                    style={{
+                      background: config.color,
+                      color: "white",
+                      border: "none",
+                      padding: "10px 16px",
+                      borderRadius: "8px",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      cursor: "pointer",
+                      width: "100%"
+                    }}
+                  >
+                    Add Detail
+                  </button>
+                </div>
+              );
+            })
+          ) : (
+            <div style={{ colSpan: "all", textAlign: "center", padding: "40px", color: darkMode ? "#94a3b8" : "#64748b" }}>
+              No matching modules found for "{searchTerm}"
+            </div>
+          )}
         </div>
       </div>
     </div>
