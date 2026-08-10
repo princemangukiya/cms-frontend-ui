@@ -1,30 +1,213 @@
-/* --- Login Styles --- */
-body { margin: 0; font-family: Arial; background: #0f172a; }
-
-.login-container { height: 100vh; display: flex; justify-content: center; align-items: center; }
-
-.login-box { background: white; padding: 30px; border-radius: 10px; width: 300px; display: flex; flex-direction: column; gap: 15px; }
-
-.login-box h2 { text-align: center; margin: 0; }
-.login-box input { padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
-.login-box button { padding: 10px; background: #2563eb; color: white; border: none; border-radius: 5px; cursor: pointer; }
-
-/* --- Staff/Form Page Styles --- */
-.form-page { display: flex; justify-content: center; padding: 40px; }
-
-.form-container { 
-    max-width: 400px; width: 100%; padding: 25px; border-radius: 10px; 
-    background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+/* ==========================================================================
+   Global Reset & Fonts
+   ========================================================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.form-container h2 { text-align: center; margin-top: 0; color: #333; }
-
-.vertical-form { display: flex; flex-direction: column; gap: 15px; }
-
-.vertical-form input { padding: 12px; border: 1px solid #ccc; border-radius: 5px; width: 100%; box-sizing: border-box; }
-
-.submit-btn { 
-    background-color: black; color: white; padding: 12px; border: none; 
-    border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px; 
+body {
+  margin: 0;
+  background: #0f172a;
+  color: #f8fafc;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
-.submit-btn:hover { background-color: #333; }
+
+/* ==========================================================================
+   Login Page Styles
+   ========================================================================== */
+.login-container {
+  min-height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  padding: 20px;
+}
+
+.login-box {
+  background: #ffffff;
+  padding: 40px 32px;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.login-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.45);
+}
+
+.login-box h2 {
+  text-align: center;
+  margin: 0;
+  color: #1e293b;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.login-box input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 500;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.login-box input:focus {
+  border-color: #2563eb;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+.login-box input::placeholder {
+  color: #94a3b8;
+}
+
+.login-box button {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+  transition: all 0.2s ease;
+}
+
+.login-box button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.45);
+}
+
+.login-box button:active {
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   Staff / General Form Page Styles
+   ========================================================================== */
+.form-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+}
+
+.form-container {
+  width: 100%;
+  max-width: 450px;
+  padding: 36px 30px;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.form-container:hover {
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
+}
+
+.form-container h2 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 24px;
+  color: #1e293b;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.vertical-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.vertical-form input,
+.vertical-form select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 500;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.vertical-form input:focus,
+.vertical-form select:focus {
+  border-color: #2563eb;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+.vertical-form input::placeholder {
+  color: #94a3b8;
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #ffffff;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 15px;
+  margin-top: 10px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
+  transition: all 0.2s ease;
+}
+
+.submit-btn:hover {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(15, 23, 42, 0.35);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   Responsive Adjustments
+   ========================================================================== */
+@media (max-width: 480px) {
+  .login-box,
+  .form-container {
+    padding: 24px 20px;
+    border-radius: 16px;
+  }
+
+  .login-box h2,
+  .form-container h2 {
+    font-size: 22px;
+  }
+}

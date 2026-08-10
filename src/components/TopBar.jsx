@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, Bell, Sun, Moon, X, CheckCircle, AlertCircle, Info, Trash2, Clock } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
-const TopBar = ({ searchTerm, setSearchTerm }) => {
+const TopBar = ({ searchTerm = '', setSearchTerm = () => {} }) => {
   const { darkMode, toggleTheme } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
+  const dropdownRef = useRef(null);
 
-  // Helper to calculate relative time (e.g., Just now, 2m ago)
+  // Helper to calculate relative time
   const getRelativeTime = (timestamp) => {
     if (!timestamp) return "Just now";
     const diffInSeconds = Math.floor((Date.now() - timestamp) / 1000);
@@ -20,18 +21,36 @@ const TopBar = ({ searchTerm, setSearchTerm }) => {
 
   // State for logs
   const [notifications, setNotifications] = useState(() => {
-    const saved = localStorage.getItem("cms_activity_logs");
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem("cms_activity_logs");
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
   });
 
-  // Real-time Event Listener for instant updates without page refresh
+  // Real-time Event Listener for instant updates
   useEffect(() => {
     const handleNewActivity = (e) => {
-      setNotifications(e.detail);
+      if (e.detail) {
+        setNotifications(e.detail);
+      }
     };
 
     window.addEventListener("cms_new_activity", handleNewActivity);
     return () => window.removeEventListener("cms_new_activity", handleNewActivity);
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const clearAllNotifications = () => {
@@ -39,32 +58,47 @@ const TopBar = ({ searchTerm, setSearchTerm }) => {
     localStorage.removeItem("cms_activity_logs");
   };
 
+  const themeStyles = {
+    barBg: darkMode ? '#1e293b' : '#ffffff',
+    textPrimary: darkMode ? '#f8fafc' : '#1e293b',
+    textMuted: darkMode ? '#94a3b8' : '#64748b',
+    searchBg: darkMode ? '#334155' : '#f1f5f9',
+    iconBg: darkMode ? '#334155' : '#f1f5f9',
+    dropdownBg: darkMode ? '#1e293b' : '#ffffff',
+    border: darkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid #e2e8f0',
+    shadow: darkMode ? '0 10px 30px rgba(0,0,0,0.4)' : '0 10px 25px rgba(0,0,0,0.06)'
+  };
+
   return (
     <div style={{
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      padding: '12px 20px',
-      backgroundColor: darkMode ? '#1e293b' : '#ffffff',
-      color: darkMode ? '#f8fafc' : '#1e293b',
-      borderRadius: '12px',
+      padding: '14px 24px',
+      backgroundColor: themeStyles.barBg,
+      color: themeStyles.textPrimary,
+      borderRadius: '16px',
       marginBottom: '25px',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-      transition: 'all 0.3s ease'
+      boxShadow: themeStyles.shadow,
+      border: themeStyles.border,
+      transition: 'all 0.3s ease',
+      fontFamily: "'Inter', system-ui, -apple-system, sans-serif"
     }}>
       {/* 1. Global Search Bar */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        backgroundColor: darkMode ? '#334155' : '#f1f5f9',
-        padding: '8px 14px',
-        borderRadius: '8px',
-        width: '320px'
+        backgroundColor: themeStyles.searchBg,
+        padding: '10px 16px',
+        borderRadius: '12px',
+        width: '340px',
+        border: '1px solid transparent',
+        transition: 'all 0.2s ease'
       }}>
-        <Search size={18} style={{ marginRight: '10px', opacity: 0.6 }} />
+        <Search size={18} style={{ marginRight: '10px', color: themeStyles.textMuted }} />
         <input
           type="text"
-          placeholder="Search card (e.g. Student, Fees)..."
+          placeholder="Search everywhere..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{
@@ -73,41 +107,52 @@ const TopBar = ({ searchTerm, setSearchTerm }) => {
             backgroundColor: 'transparent',
             color: 'inherit',
             width: '100%',
-            fontSize: '14px'
+            fontSize: '14px',
+            fontWeight: '500'
           }}
         />
         {searchTerm && (
           <X
             size={16}
-            style={{ cursor: 'pointer', opacity: 0.6 }}
+            style={{ cursor: 'pointer', color: themeStyles.textMuted }}
             onClick={() => setSearchTerm('')}
           />
         )}
       </div>
 
-      {/* 2. Notification Bell & Dark Mode Toggle */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '18px', position: 'relative' }}>
+      {/* 2. Notification Bell & Theme Toggle */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '20px', position: 'relative' }} ref={dropdownRef}>
 
         {/* Clickable Notification Bell Icon */}
-        <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => setShowNotifications(!showNotifications)}>
-          <div style={{
-            padding: '8px',
-            borderRadius: '50%',
-            backgroundColor: darkMode ? '#334155' : '#f1f5f9',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
+        <div style={{ position: 'relative' }}>
+          <button
+            type="button"
+            onClick={() => setShowNotifications(!showNotifications)}
+            style={{
+              padding: '10px',
+              borderRadius: '50%',
+              backgroundColor: themeStyles.iconBg,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'inherit',
+              transition: 'transform 0.2s ease, background-color 0.2s ease'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
             <Bell size={20} />
-          </div>
+          </button>
 
           {notifications.length > 0 && (
             <span style={{
               position: 'absolute',
-              top: '-2px',
-              right: '-2px',
+              top: '-3px',
+              right: '-3px',
               backgroundColor: notifications.some(n => n.type === 'error') ? '#ef4444' : '#22c55e',
-              color: '#fff',
+              color: '#ffffff',
               borderRadius: '50%',
               fontSize: '10px',
               width: '18px',
@@ -115,50 +160,49 @@ const TopBar = ({ searchTerm, setSearchTerm }) => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontWeight: 'bold',
-              border: `2px solid ${darkMode ? '#1e293b' : '#ffffff'}`
+              fontWeight: '700',
+              border: `2px solid ${themeStyles.barBg}`
             }}>
-              {notifications.length}
+              {notifications.length > 9 ? '9+' : notifications.length}
             </span>
           )}
 
           {/* Activity Log Dropdown */}
           {showNotifications && (
             <div
-              onClick={(e) => e.stopPropagation()}
               style={{
                 position: 'absolute',
                 right: 0,
-                top: '48px',
-                width: '350px',
-                backgroundColor: darkMode ? '#1e293b' : '#ffffff',
-                color: darkMode ? '#f8fafc' : '#1e293b',
-                boxShadow: '0 12px 30px rgba(0,0,0,0.18)',
-                borderRadius: '14px',
-                padding: '16px',
-                zIndex: 200,
-                border: darkMode ? '1px solid #334155' : '1px solid #e2e8f0'
+                top: '54px',
+                width: '360px',
+                backgroundColor: themeStyles.dropdownBg,
+                color: themeStyles.textPrimary,
+                boxShadow: '0 20px 40px rgba(0,0,0,0.25)',
+                borderRadius: '16px',
+                padding: '18px',
+                zIndex: 1000,
+                border: themeStyles.border
               }}
             >
-              {/* Header */}
+              {/* Dropdown Header */}
               <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 paddingBottom: '12px',
-                borderBottom: darkMode ? '1px solid #334155' : '1px solid #f1f5f9'
+                borderBottom: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid #f1f5f9'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '700' }}>Activity Logs</h4>
                   <span style={{
                     backgroundColor: darkMode ? '#334155' : '#e2e8f0',
-                    color: darkMode ? '#f8fafc' : '#475569',
+                    color: themeStyles.textPrimary,
                     fontSize: '11px',
                     padding: '2px 8px',
                     borderRadius: '12px',
                     fontWeight: '600'
                   }}>
-                    {notifications.length} Logs
+                    {notifications.length}
                   </span>
                 </div>
 
@@ -174,31 +218,30 @@ const TopBar = ({ searchTerm, setSearchTerm }) => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: '4px',
-                      fontWeight: '500'
+                      fontWeight: '600'
                     }}
                   >
-                    <Trash2 size={13} /> Clear
+                    <Trash2 size={13} /> Clear All
                   </button>
                 )}
               </div>
 
               {/* Notification List */}
-              <div style={{ maxHeight: '290px', overflowY: 'auto', marginTop: '10px' }}>
+              <div style={{ maxHeight: '300px', overflowY: 'auto', marginTop: '12px' }}>
                 {notifications.length > 0 ? (
                   notifications.map((item) => {
                     const isSuccess = item.type === 'success';
                     return (
-                      <div key={item.id} style={{
+                      <div key={item.id || Math.random()} style={{
                         display: 'flex',
                         gap: '12px',
-                        padding: '10px 12px',
-                        borderRadius: '10px',
+                        padding: '12px',
+                        borderRadius: '12px',
                         marginBottom: '8px',
                         backgroundColor: isSuccess
                           ? (darkMode ? '#064e3b33' : '#f0fdf4')
                           : (darkMode ? '#7f1d1d33' : '#fef2f2'),
-                        borderLeft: `4px solid ${isSuccess ? '#22c55e' : '#ef4444'}`,
-                        transition: 'all 0.2s'
+                        borderLeft: `4px solid ${isSuccess ? '#22c55e' : '#ef4444'}`
                       }}>
                         <div style={{
                           color: isSuccess ? '#22c55e' : '#ef4444',
@@ -207,22 +250,22 @@ const TopBar = ({ searchTerm, setSearchTerm }) => {
                           justifyContent: 'center',
                           flexShrink: 0
                         }}>
-                          {isSuccess ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
+                          {isSuccess ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
                         </div>
                         <div style={{ flex: 1 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span style={{
                               fontSize: '13px',
-                              fontWeight: '600',
+                              fontWeight: '700',
                               color: isSuccess ? (darkMode ? '#4ade80' : '#15803d') : (darkMode ? '#f87171' : '#b91c1c')
                             }}>
                               {item.title}
                             </span>
-                            <span style={{ fontSize: '10px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            <span style={{ fontSize: '10px', color: themeStyles.textMuted, display: 'flex', alignItems: 'center', gap: '3px' }}>
                               <Clock size={10} /> {getRelativeTime(item.timestamp)}
                             </span>
                           </div>
-                          <p style={{ margin: '3px 0 0 0', fontSize: '11px', color: darkMode ? '#cbd5e1' : '#475569', lineHeight: '1.4' }}>
+                          <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: themeStyles.textMuted, lineHeight: '1.4' }}>
                             {item.desc}
                           </p>
                         </div>
@@ -230,9 +273,9 @@ const TopBar = ({ searchTerm, setSearchTerm }) => {
                     );
                   })
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '25px 10px', color: '#94a3b8', fontSize: '13px' }}>
-                    <Info size={28} style={{ marginBottom: '6px', opacity: 0.5 }} />
-                    <p style={{ margin: 0 }}>No past activity logs found.</p>
+                  <div style={{ textAlign: 'center', padding: '30px 10px', color: themeStyles.textMuted, fontSize: '13px' }}>
+                    <Info size={28} style={{ marginBottom: '8px', opacity: 0.5 }} />
+                    <p style={{ margin: 0, fontWeight: '500' }}>No activity logs found</p>
                   </div>
                 )}
               </div>
@@ -242,18 +285,25 @@ const TopBar = ({ searchTerm, setSearchTerm }) => {
 
         {/* Dark/Light Theme Button */}
         <button
+          type="button"
           onClick={toggleTheme}
           style={{
-            background: 'transparent',
+            padding: '10px',
+            borderRadius: '50%',
+            backgroundColor: themeStyles.iconBg,
             border: 'none',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            color: 'inherit'
+            justifyContent: 'center',
+            color: 'inherit',
+            transition: 'transform 0.2s ease'
           }}
-          title="Toggle Dark/Light Mode"
+          onMouseOver={(e) => e.currentTarget.style.transform = 'rotate(15deg)'}
+          onMouseOut={(e) => e.currentTarget.style.transform = 'rotate(0deg)'}
+          title="Toggle Theme"
         >
-          {darkMode ? <Sun size={22} color="#f59e0b" /> : <Moon size={22} color="#6366f1" />}
+          {darkMode ? <Sun size={20} color="#f59e0b" /> : <Moon size={20} color="#6366f1" />}
         </button>
 
       </div>

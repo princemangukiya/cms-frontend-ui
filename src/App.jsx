@@ -5,6 +5,7 @@ import ProtectedRoute from "./pages/ProtectedRoute";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile"; // 1. Profile Page Import
 import Student from "./pages/Student";
 import Staff from "./pages/Staff";
 import Course from "./pages/Course";
@@ -31,6 +32,10 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+
+        {/* 2. Manage Profile Protected Route */}
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+
         <Route path="/student" element={<ProtectedRoute><Student /></ProtectedRoute>} />
         <Route path="/staff" element={<ProtectedRoute><Staff /></ProtectedRoute>} />
         <Route path="/course" element={<ProtectedRoute><Course /></ProtectedRoute>} />
@@ -53,4 +58,5 @@ function App() {
     </BrowserRouter>
   );
 }
+
 export default App;

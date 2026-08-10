@@ -1,42 +1,153 @@
+/* ==========================================================================
+   1. Global Reset & CSS Variables (Design Tokens)
+   ========================================================================== */
+:root {
+  --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Color Palette */
+  --bg-page: #0f172a;
+  --bg-card: #ffffff;
+  --bg-input: #f8fafc;
+
+  --primary-color: #2563eb;
+  --primary-hover: #1d4ed8;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --border-color: #cbd5e1;
+
+  /* Shadows & Radius */
+  --radius-lg: 20px;
+  --radius-md: 12px;
+  --shadow-main: 0 20px 40px rgba(0, 0, 0, 0.35);
+  --shadow-hover: 0 25px 50px rgba(0, 0, 0, 0.45);
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: var(--font-family);
 }
 
 body {
-  font-family: Arial, sans-serif;
-  background: #f4f4f4;
+  margin: 0;
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* ==========================================================================
+   2. Layout & Container
+   ========================================================================== */
 .container {
-  height: 100vh;
+  min-height: 100vh;
+  width: 100vw;
   display: flex;
   justify-content: center;
   align-items: center;
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  padding: 20px;
 }
 
+/* ==========================================================================
+   3. Card & Login Box Styles
+   ========================================================================== */
 .login-box {
-  background: white;
-  padding: 30px;
-  width: 350px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  background: var(--bg-card);
+  padding: 40px 32px;
+  width: 100%;
+  max-width: 380px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-main);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.login-box:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
 }
 
 .login-box h2 {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 8px;
+  color: var(--text-main);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
 }
 
-.login-box input {
+/* ==========================================================================
+   4. Form Controls (Inputs & Selects)
+   ========================================================================== */
+.login-box input,
+.login-box select {
   width: 100%;
-  padding: 12px;
-  margin-bottom: 15px;
+  padding: 12px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-input);
+  color: var(--text-main);
+  font-size: 14px;
+  font-weight: 500;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
 }
 
+.login-box input:focus,
+.login-box select:focus {
+  border-color: var(--primary-color);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+.login-box input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   5. Buttons
+   ========================================================================== */
 .login-box button {
   width: 100%;
-  padding: 12px;
+  padding: 14px;
+  margin-top: 8px;
+  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary-color) 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md);
   cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+  transition: all 0.2s ease;
+}
+
+.login-box button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.45);
+}
+
+.login-box button:active {
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   6. Media Queries (Responsive Design)
+   ========================================================================== */
+@media (max-width: 480px) {
+  .login-box {
+    padding: 28px 20px;
+    border-radius: var(--radius-md);
+  }
+
+  .login-box h2 {
+    font-size: 20px;
+  }
 }

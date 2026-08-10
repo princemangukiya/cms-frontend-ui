@@ -1,22 +1,227 @@
-.management-container {
+/* Base Page Styling */
+.book-issue-page {
+  min-height: 100vh;
+  width: 100vw;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  padding: 40px 20px;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  background-color: #f9f9f9;
+  box-sizing: border-box;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  transition: background 0.3s ease;
 }
-.management-card {
-  background: #ffffff;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+
+/* Dark Mode Background Override */
+.book-issue-page.dark-mode {
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+}
+
+/* Card Container */
+.book-issue-card {
   width: 100%;
-  max-width: 400px;
-  border: 1px solid #e0e0e0;
+  max-width: 800px;
+  background: #ffffff;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
 }
-.management-title { text-align: center; margin-bottom: 20px; color: #333; }
-.management-form { display: flex; flex-direction: column; gap: 15px; }
-.form-control { padding: 12px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
-.text-area-fix { height: 100px; resize: none; }
-.submit-btn { background-color: #000; color: #fff; padding: 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
-.submit-btn:hover { background-color: #333; }
+
+.book-issue-page.dark-mode .book-issue-card {
+  background: #1e293b;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Amber/Orange Gradient Header */
+.book-issue-header {
+  background: linear-gradient(135deg, #d97706 0%, #f59e0b 50%, #fbbf24 100%);
+  padding: 32px 24px;
+  color: #ffffff;
+  text-align: center;
+}
+
+.book-issue-header h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.book-issue-header p {
+  margin: 6px 0 0 0;
+  opacity: 0.9;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Form Section */
+.book-issue-form {
+  padding: 32px;
+}
+
+.book-issue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+/* Form Field Groups */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.field-group label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.book-issue-page.dark-mode .field-group label {
+  color: #94a3b8;
+}
+
+.required {
+  color: #ef4444;
+}
+
+/* Input Wrappers & Icons */
+.input-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  color: #d97706;
+  pointer-events: none;
+  z-index: 10;
+  font-size: 16px;
+}
+
+.textarea-icon {
+  top: 14px;
+}
+
+/* Inputs, Selects & Textareas */
+.input-wrapper input,
+.input-wrapper textarea {
+  width: 100%;
+  padding: 12px 14px 12px 42px;
+  border-radius: 12px;
+  border: 2px solid #cbd5e1;
+  background: #f8fafc;
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 500;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.input-wrapper textarea {
+  height: 90px;
+  resize: none;
+}
+
+.book-issue-page.dark-mode .input-wrapper input,
+.book-issue-page.dark-mode .input-wrapper textarea {
+  border-color: #334155;
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+/* Focus Effects */
+.input-wrapper input:focus,
+.input-wrapper textarea:focus {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+  background: #ffffff;
+}
+
+.book-issue-page.dark-mode .input-wrapper input:focus,
+.book-issue-page.dark-mode .input-wrapper textarea:focus {
+  background: #1e293b;
+}
+
+/* Action Button Group */
+.button-group {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+/* Back Button */
+.back-btn {
+  padding: 12px 28px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+}
+
+/* Save Button */
+.save-btn {
+  padding: 12px 36px;
+  background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.35);
+  transition: all 0.2s ease;
+}
+
+.save-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(245, 158, 11, 0.45);
+}
+
+/* Mobile Responsive adjustment */
+@media (max-width: 600px) {
+  .book-issue-grid {
+    grid-template-columns: 1fr;
+  }
+  .button-group {
+    flex-direction: column-reverse;
+    width: 100%;
+  }
+  .back-btn, .save-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

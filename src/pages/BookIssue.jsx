@@ -1,9 +1,18 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import {
+  FaBook, FaUser, FaCalendarAlt,
+  FaMoneyBillWave, FaCommentDots, FaArrowLeft, FaSave
+} from "react-icons/fa";
+import { useTheme } from "../context/ThemeContext";
+import "./BookIssue.css"; // CSS file import
 
 const BookIssue = () => {
   const navigate = useNavigate();
+  const themeContext = useTheme();
+  const darkMode = themeContext?.darkMode ?? false;
+
   const [formData, setFormData] = useState({
     bookId: '', userId: '', issueDate: '', fine: '', reason: ''
   });
@@ -33,53 +42,115 @@ const BookIssue = () => {
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <div style={styles.header}>
-          <h2 style={{ margin: 0 }}>Book Issue Management</h2>
-          <p style={{ margin: "5px 0 0 0", opacity: 0.8 }}>Manage Issued Books</p>
+    <div className={`book-issue-page ${darkMode ? "dark-mode" : ""}`}>
+      <div className="book-issue-card">
+        {/* Modern Amber Gradient Header */}
+        <div className="book-issue-header">
+          <h2>Book Issue Management</h2>
+          <p>Manage Issued Books</p>
         </div>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <div style={styles.grid}>
-            <input name="bookId" type="number" placeholder="Book ID" value={formData.bookId} onChange={handleInputChange} style={styles.input} required />
-            <input name="userId" type="number" placeholder="User ID" value={formData.userId} onChange={handleInputChange} style={styles.input} required />
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} className="book-issue-form">
+          <div className="book-issue-grid">
 
-            <div style={styles.fieldWrapper}>
-              <label style={styles.label}>Issue Date</label>
-              <input name="issueDate" type="date" value={formData.issueDate} onChange={handleInputChange} style={styles.input} required />
+            {/* Book ID */}
+            <div className="field-group">
+              <label>Book ID <span className="required">*</span></label>
+              <div className="input-wrapper">
+                <FaBook className="input-icon" />
+                <input
+                  type="number"
+                  name="bookId"
+                  placeholder="Enter Book ID"
+                  value={formData.bookId}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
             </div>
 
-            <input name="fine" type="number" placeholder="Fine Amount" value={formData.fine} onChange={handleInputChange} style={styles.input} step="0.01" />
-
-            <div style={{ ...styles.fieldWrapper, gridColumn: "span 2" }}>
-              <label style={styles.label}>Reason for Issue</label>
-              <textarea name="reason" placeholder="Enter Book Reason..." value={formData.reason} onChange={handleInputChange} style={{...styles.input, height: "80px"}} />
+            {/* User ID */}
+            <div className="field-group">
+              <label>User ID <span className="required">*</span></label>
+              <div className="input-wrapper">
+                <FaUser className="input-icon" />
+                <input
+                  type="number"
+                  name="userId"
+                  placeholder="Enter User ID"
+                  value={formData.userId}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
             </div>
+
+            {/* Issue Date */}
+            <div className="field-group">
+              <label>Issue Date <span className="required">*</span></label>
+              <div className="input-wrapper">
+                <FaCalendarAlt className="input-icon" />
+                <input
+                  type="date"
+                  name="issueDate"
+                  value={formData.issueDate}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Fine Amount */}
+            <div className="field-group">
+              <label>Fine Amount</label>
+              <div className="input-wrapper">
+                <FaMoneyBillWave className="input-icon" />
+                <input
+                  type="number"
+                  name="fine"
+                  step="0.01"
+                  placeholder="Enter Fine Amount (Optional)"
+                  value={formData.fine}
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+
+            {/* Reason for Issue */}
+            <div className="field-group full-width">
+              <label>Reason for Issue</label>
+              <div className="input-wrapper textarea-wrapper">
+                <FaCommentDots className="input-icon textarea-icon" />
+                <textarea
+                  name="reason"
+                  placeholder="Enter Book Reason..."
+                  value={formData.reason}
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+
           </div>
 
-          <div style={styles.buttonGroup}>
-            <button type="button" onClick={() => navigate('/dashboard')} style={styles.backButton}>Back</button>
-            <button type="submit" style={styles.saveButton}>Save Book Issue</button>
+          {/* Action Buttons */}
+          <div className="button-group">
+            <button
+              type="button"
+              className="back-btn"
+              onClick={() => navigate('/dashboard')}
+            >
+              <FaArrowLeft size={14} /> Back
+            </button>
+
+            <button type="submit" className="save-btn">
+              <FaSave size={14} /> Save Book Issue
+            </button>
           </div>
         </form>
       </div>
     </div>
   );
-};
-
-const styles = {
-  page: { minHeight: "100vh", background: "#f0f2f5", padding: "40px", display: "flex", justifyContent: "center" },
-  card: { width: "100%", maxWidth: "800px", background: "#fff", borderRadius: "15px", overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" },
-  header: { background: "#4a90e2", padding: "30px", color: "#fff", textAlign: "center" },
-  form: { padding: "30px" },
-  grid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" },
-  fieldWrapper: { display: "flex", flexDirection: "column", gap: "5px" },
-  label: { fontSize: "12px", fontWeight: "bold", color: "#666" },
-  input: { padding: "12px", borderRadius: "8px", border: "1px solid #ddd", fontSize: "14px", width: "100%", boxSizing: "border-box" },
-  buttonGroup: { display: "flex", gap: "15px", marginTop: "30px", justifyContent: "center" },
-  saveButton: { padding: "12px 40px", background: "#4a90e2", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" },
-  backButton: { padding: "12px 40px", background: "#e74c3c", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: "bold" }
 };
 
 export default BookIssue;
