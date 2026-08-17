@@ -56,7 +56,7 @@ function Profile() {
       reader.onloadend = () => {
         const base64Image = reader.result;
         setProfileImage(base64Image);
-        localStorage.setItem("userProfilePic", base64Image);
+
         window.dispatchEvent(new Event("profileUpdated"));
       };
       reader.readAsDataURL(file);

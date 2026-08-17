@@ -80,7 +80,7 @@ function Dashboard() {
       reader.onloadend = () => {
         const base64Image = reader.result;
         setProfileImage(base64Image);
-        localStorage.setItem("userProfilePic", base64Image);
+
         window.dispatchEvent(new Event("profileUpdated"));
       };
       reader.readAsDataURL(file);
@@ -116,7 +116,6 @@ function Dashboard() {
     navigate("/");
   };
 
-  // Ultra Premium Theme Styling Map
   const themeStyles = {
     bgMain: darkMode
       ? "radial-gradient(circle at top right, #1e1b4b 0%, #0f172a 40%, #020617 100%)"

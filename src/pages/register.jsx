@@ -104,9 +104,6 @@ const Register = () => {
                 headers: { 'Content-Type': 'application/json' }
             });
 
-            alert("Registration Successful!");
-
-            // 2. Direct Auto-Login (Taki token mile aur ander enter ho sakien)
             try {
                 const loginRes = await axios.post('http://localhost:8080/api/users/login', {
                     emailId: formData.emailId,
@@ -121,8 +118,6 @@ const Register = () => {
                 console.log("Auto login optional error:", loginErr);
             }
 
-            // 3. Directly navigate to Dashboard/Home
-            // NOTE: Agar aapke Route ka naam '/dashboard' ke bajaye '/home' ya '/principal-dashboard' hai to yahan change kar dein.
             navigate('/dashboard', { replace: true });
 
         } catch (error) {
