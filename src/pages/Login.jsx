@@ -10,6 +10,7 @@ const Login = () => {
         password: ''
     });
 
+    const [loading, setLoading] = useState(false);
     const [focusedInput, setFocusedInput] = useState(null);
     const [isHovered, setIsHovered] = useState(false);
     const canvasRef = useRef(null);
@@ -99,6 +100,7 @@ const Login = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        setLoading(true);
 
         try {
             const response = await axios.post(
@@ -107,13 +109,23 @@ const Login = () => {
             );
 
             localStorage.setItem("token", response.data.token);
-            localStorage.setItem("user", JSON.stringify(response.data.user));
+            if (response.data.user) {
+                localStorage.setItem("user", JSON.stringify(response.data.user));
+            }
 
             navigate("/dashboard");
 
         } catch (error) {
-            console.error(error);
-            alert("Invalid Email or Password!");
+            console.error("Login request failed:", error);
+            if (error.response) {
+                alert(typeof error.response.data === 'string'
+                    ? error.response.data
+                    : "Invalid Email or Password!");
+            } else {
+                alert("Server Connection Error / CORS Blocked!");
+            }
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -231,8 +243,7 @@ const Login = () => {
             fontSize: '15px',
             color: '#ffffff',
             boxSizing: 'border-box',
-            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-            cursor: 'pointer'
+            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
         }),
         button: {
             width: '100%',
@@ -246,11 +257,12 @@ const Login = () => {
             borderRadius: '16px',
             fontSize: '17px',
             fontWeight: '800',
-            cursor: 'pointer',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            opacity: loading ? 0.7 : 1,
             boxShadow: isHovered
                 ? '0 20px 40px rgba(168, 85, 247, 0.7), 0 0 20px rgba(236, 72, 153, 0.5)'
                 : '0 10px 25px rgba(168, 85, 247, 0.35)',
-            transform: isHovered ? 'translateY(-3px) scale(1.02)' : 'translateY(0) scale(1)',
+            transform: isHovered && !loading ? 'translateY(-3px) scale(1.02)' : 'translateY(0) scale(1)',
             transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
             letterSpacing: '0.6px'
         },
@@ -315,10 +327,11 @@ const Login = () => {
                         <button
                             type="submit"
                             style={styles.button}
+                            disabled={loading}
                             onMouseEnter={() => setIsHovered(true)}
                             onMouseLeave={() => setIsHovered(false)}
                         >
-                            Login
+                            {loading ? "Logging in..." : "Login"}
                         </button>
                     </form>
 
