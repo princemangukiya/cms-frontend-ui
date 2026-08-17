@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Register = () => {
+    const navigate = useNavigate();
+
     const [formData, setFormData] = useState({
         full_name: '',
         emailId: '',
@@ -15,7 +17,7 @@ const Register = () => {
     const [isHovered, setIsHovered] = useState(false);
     const canvasRef = useRef(null);
 
-    // Dynamic Mesh Particle Canvas Background
+    // Particle Background Effect
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -97,10 +99,32 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:8080/api/users/register', formData, {
+            // 1. Register API Call
+            const regRes = await axios.post('http://localhost:8080/api/users/register', formData, {
                 headers: { 'Content-Type': 'application/json' }
             });
+
             alert("Registration Successful!");
+
+            // 2. Direct Auto-Login (Taki token mile aur ander enter ho sakien)
+            try {
+                const loginRes = await axios.post('http://localhost:8080/api/users/login', {
+                    emailId: formData.emailId,
+                    password: formData.password
+                });
+
+                if (loginRes.data && loginRes.data.token) {
+                    localStorage.setItem('token', loginRes.data.token);
+                    localStorage.setItem('user', JSON.stringify(loginRes.data.user || loginRes.data));
+                }
+            } catch (loginErr) {
+                console.log("Auto login optional error:", loginErr);
+            }
+
+            // 3. Directly navigate to Dashboard/Home
+            // NOTE: Agar aapke Route ka naam '/dashboard' ke bajaye '/home' ya '/principal-dashboard' hai to yahan change kar dein.
+            navigate('/dashboard', { replace: true });
+
         } catch (error) {
             alert("Registration Failed!");
         }

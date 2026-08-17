@@ -260,13 +260,15 @@ const Login = () => {
             paddingTop: '24px',
             borderTop: '1px solid rgba(255, 255, 255, 0.08)',
             fontSize: '14px',
-            color: '#94a3b8'
+            color: '#94a3b8',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
         },
         link: {
             color: '#38bdf8',
             fontWeight: '600',
             textDecoration: 'none',
-            marginLeft: '6px',
             transition: 'color 0.2s ease'
         }
     };
@@ -322,13 +324,15 @@ const Login = () => {
                     </form>
 
                     <div style={styles.footer}>
-                        Don't have an account?{" "}
-                        <Link
-                            to="/register"
-                            style={styles.link}
-                        >
-                            Register
+                        <Link to="/forgot-password" style={styles.link}>
+                            Forgot Password?
                         </Link>
+                        <span>
+                            Don't have an account?{" "}
+                            <Link to="/register" style={styles.link}>
+                                Register
+                            </Link>
+                        </span>
                     </div>
                 </div>
             </div>
