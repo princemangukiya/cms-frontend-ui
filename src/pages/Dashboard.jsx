@@ -1,6 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from "react-router-dom";
-import { FaUserGraduate, FaChalkboardTeacher, FaBook, FaBookOpen, FaChartBar, FaClipboardCheck, FaTasks, FaRegCalendarAlt, FaUniversity, FaDollarSign, FaSuitcase, FaBuilding, FaMoneyBillWave, FaComments, FaTrophy } from 'react-icons/fa';
+import axios from 'axios';
+import {
+  FaUserGraduate,
+  FaChalkboardTeacher,
+  FaBook,
+  FaBookOpen,
+  FaChartBar,
+  FaClipboardCheck,
+  FaTasks,
+  FaRegCalendarAlt,
+  FaUniversity,
+  FaDollarSign,
+  FaSuitcase,
+  FaBuilding,
+  FaMoneyBillWave,
+  FaComments,
+  FaTrophy
+} from 'react-icons/fa';
 import TopBar from "../components/TopBar";
 import { useTheme } from "../context/ThemeContext";
 
@@ -29,33 +46,42 @@ function Dashboard() {
   const navigate = useNavigate();
   const themeContext = useTheme();
 
-  // Dynamic Theme Fallback check
   const darkMode = themeContext?.darkMode ?? false;
 
   const [searchTerm, setSearchTerm] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [userEmail, setUserEmail] = useState('');
-  const [profileImage, setProfileImage] = useState(() => {
-    return localStorage.getItem("userProfilePic") || DEFAULT_AVATAR;
-  });
+  const [profileImage, setProfileImage] = useState(DEFAULT_AVATAR);
 
   const fileInputRef = useRef(null);
 
-  // Load user data
   const loadUserData = () => {
-    const user = JSON.parse(localStorage.getItem("user")) || {};
-    const email = user?.emailId || localStorage.getItem("userEmail") || "v12@gmail.com";
-    setUserEmail(email);
+    try {
+      const user = JSON.parse(localStorage.getItem("user")) || {};
+      const email = user?.emailId || user?.email_id || user?.email || "";
+      setUserEmail(email);
 
-    if (user?.fullName && user.fullName.trim() !== '') {
-      setDisplayName(user.fullName);
-    } else {
-      const rawName = email.split("@")[0];
-      setDisplayName(rawName.charAt(0).toUpperCase() + rawName.slice(1).toLowerCase());
+      if (user?.fullName && user.fullName.trim() !== '') {
+        setDisplayName(user.fullName);
+      } else if (user?.full_name && user.full_name.trim() !== '') {
+        setDisplayName(user.full_name);
+      } else if (email) {
+        const rawName = email.split("@")[0];
+        setDisplayName(rawName.charAt(0).toUpperCase() + rawName.slice(1).toLowerCase());
+      } else {
+        setDisplayName("User");
+      }
+
+      let savedImage = user?.profile_pic || user?.profilePic || localStorage.getItem("userProfilePic");
+
+      if (savedImage && savedImage !== "NULL" && savedImage.trim().length > 0) {
+        setProfileImage(savedImage);
+      } else {
+        setProfileImage(DEFAULT_AVATAR);
+      }
+    } catch (error) {
+      console.error("Error loading user data in Dashboard:", error);
     }
-
-    const savedImage = localStorage.getItem("userProfilePic");
-    if (savedImage) setProfileImage(savedImage);
   };
 
   useEffect(() => {
@@ -73,15 +99,85 @@ function Dashboard() {
     fileInputRef.current?.click();
   };
 
+  const handleOpenImageInBrowser = (e) => {
+    e.stopPropagation();
+
+    if (!profileImage || profileImage === DEFAULT_AVATAR) {
+      handleAvatarClick();
+      return;
+    }
+
+    try {
+      if (profileImage.startsWith("data:image")) {
+        const parts = profileImage.split(';base64,');
+        const contentType = parts[0].replace('data:', '');
+        const byteCharacters = window.atob(parts[1]);
+        const byteArrays = [];
+
+        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+          const slice = byteCharacters.slice(offset, offset + 512);
+          const byteNumbers = new Array(slice.length);
+          for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          byteArrays.push(byteArray);
+        }
+
+        const blob = new Blob(byteArrays, { type: contentType });
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, '_blank');
+      } else {
+        window.open(profileImage, '_blank');
+      }
+    } catch (err) {
+      console.error("Could not open image in preview tab:", err);
+      window.open(profileImage, '_blank');
+    }
+  };
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64Image = reader.result;
-        setProfileImage(base64Image);
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Image size must be less than 2MB");
+        return;
+      }
 
-        window.dispatchEvent(new Event("profileUpdated"));
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Image = reader.result;
+
+        try {
+          const user = JSON.parse(localStorage.getItem("user") || "{}");
+          const userId = user?.user_id || user?.userId || user?.id;
+
+          if (!userId) {
+            alert("User ID missing! Please login again.");
+            return;
+          }
+
+          // Database Update API Hit
+          await axios.put(`http://localhost:8080/api/users/${userId}/update-profile-pic`, {
+            profilePic: base64Image
+          });
+
+          // Local Sync
+          setProfileImage(base64Image);
+          localStorage.setItem("userProfilePic", base64Image);
+
+          user.profile_pic = base64Image;
+          user.profilePic = base64Image;
+          localStorage.setItem("user", JSON.stringify(user));
+
+          window.dispatchEvent(new Event("profileUpdated"));
+          window.dispatchEvent(new Event("storage"));
+
+          alert("Profile picture saved in Database!");
+        } catch (err) {
+          console.error("Failed to save picture in Database:", err);
+          alert("Database connection failed. Could not save photo.");
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -111,8 +207,7 @@ function Dashboard() {
   );
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    localStorage.clear();
     navigate("/");
   };
 
@@ -182,7 +277,7 @@ function Dashboard() {
           </h2>
         </div>
 
-        {/* Top Profile Card Block */}
+        {/* Profile Card */}
         <div style={{
           background: themeStyles.profileBg,
           backdropFilter: "blur(12px)",
@@ -196,7 +291,6 @@ function Dashboard() {
           boxShadow: darkMode ? "0 10px 30px rgba(0,0,0,0.3)" : "0 10px 20px rgba(0,0,0,0.03)",
           transition: "all 0.3s ease"
         }}>
-          {/* Hidden File Upload Input */}
           <input
             type="file"
             ref={fileInputRef}
@@ -205,10 +299,9 @@ function Dashboard() {
             style={{ display: "none" }}
           />
 
-          {/* Profile Picture Circle with Glowing Border */}
           <div
-            onClick={handleAvatarClick}
-            title="Click to change profile picture"
+            onClick={handleOpenImageInBrowser}
+            title="Click to view full image in browser tab"
             style={{
               position: "relative",
               width: "80px",
@@ -238,23 +331,31 @@ function Dashboard() {
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 onError={(e) => { e.target.src = DEFAULT_AVATAR; }}
               />
-              <div style={{
-                position: "absolute",
-                bottom: "0",
-                right: "0",
-                background: "rgba(15, 23, 42, 0.8)",
-                color: "#ffffff",
-                fontSize: "10px",
-                width: "100%",
-                textAlign: "center",
-                padding: "3px 0",
-                fontWeight: "700",
-                letterSpacing: "0.5px"
-              }}>✏️ Edit</div>
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAvatarClick();
+                }}
+                title="Upload/Change Picture"
+                style={{
+                  position: "absolute",
+                  bottom: "0",
+                  right: "0",
+                  background: "rgba(15, 23, 42, 0.85)",
+                  color: "#ffffff",
+                  fontSize: "10px",
+                  width: "100%",
+                  textAlign: "center",
+                  padding: "3px 0",
+                  fontWeight: "700",
+                  letterSpacing: "0.5px"
+                }}
+              >
+                ✏️ Edit
+              </div>
             </div>
           </div>
 
-          {/* User Information */}
           <span style={{ fontSize: "11px", color: themeStyles.textSecondary, letterSpacing: "1.5px", fontWeight: "800" }}>
             WELCOME BACK
           </span>
@@ -265,7 +366,6 @@ function Dashboard() {
             {userEmail}
           </span>
 
-          {/* Manage Profile Link */}
           <span
             onClick={() => navigate("/profile")}
             style={{
@@ -282,7 +382,6 @@ function Dashboard() {
             Manage Profile →
           </span>
 
-          {/* Log Out Button */}
           <button
             style={{
               background: "rgba(239, 68, 68, 0.08)",
@@ -393,7 +492,7 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Main Content Area */}
+      {/* Main Grid */}
       <div style={{ flex: 1, padding: "32px 44px", overflowY: "auto", zIndex: 10 }}>
         <TopBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
@@ -407,7 +506,6 @@ function Dashboard() {
           Dashboard Overview
         </div>
 
-        {/* Dynamic Card Grid */}
         <div style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
@@ -451,7 +549,6 @@ function Dashboard() {
                     e.currentTarget.style.boxShadow = themeStyles.cardShadow;
                   }}
                 >
-                  {/* Top Ambient Soft Glow */}
                   <div style={{
                     position: "absolute",
                     top: "-30px",

@@ -111,6 +111,13 @@ const Login = () => {
             localStorage.setItem("token", response.data.token);
             if (response.data.user) {
                 localStorage.setItem("user", JSON.stringify(response.data.user));
+
+                // Backend se mili hui DB saved photo ko LocalStorage mein sync kar rahe hain
+                if (response.data.user.profile_pic) {
+                    localStorage.setItem("userProfilePic", response.data.user.profile_pic);
+                } else {
+                    localStorage.removeItem("userProfilePic");
+                }
             }
 
             navigate("/dashboard");

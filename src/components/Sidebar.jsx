@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import axios from "axios";
 import {
   LayoutDashboard,
   Users,
@@ -20,20 +21,24 @@ function Sidebar() {
 
   const [userEmail, setUserEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [profileImage, setProfileImage] = useState(() => {
-    return localStorage.getItem("userProfilePic") || DEFAULT_AVATAR;
-  });
+  const [profileImage, setProfileImage] = useState(DEFAULT_AVATAR);
 
   const fileInputRef = useRef(null);
 
   const loadUserData = () => {
-    const user = JSON.parse(localStorage.getItem("user")) || {};
-    const email = user?.emailId || localStorage.getItem("userEmail") || localStorage.getItem("email") || "sarthak123@gmail.com";
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const email =
+      user?.emailId ||
+      user?.email_id ||
+      user?.email ||
+      localStorage.getItem("userEmail") ||
+      "";
 
     setUserEmail(email);
 
-    if (user?.fullName && user.fullName.trim() !== '') {
-      setDisplayName(user.fullName);
+    const name = user?.fullName || user?.full_name || "";
+    if (name && name.trim() !== "") {
+      setDisplayName(name);
     } else if (email) {
       const rawName = email.split("@")[0];
       setDisplayName(rawName.charAt(0).toUpperCase() + rawName.slice(1).toLowerCase());
@@ -41,8 +46,21 @@ function Sidebar() {
       setDisplayName("User");
     }
 
-    const savedImg = localStorage.getItem("userProfilePic");
-    if (savedImg) setProfileImage(savedImg);
+    // Dynamic Image Fetch Logic (Syncs from DB/LocalStorage)
+    const savedPic =
+      user?.profilePic ||
+      user?.profile_pic ||
+      localStorage.getItem("userProfilePic");
+
+    if (savedPic && savedPic !== "NULL" && savedPic.trim().length > 0) {
+      let finalPic = savedPic;
+      if (!savedPic.startsWith("data:image") && !savedPic.startsWith("http")) {
+        finalPic = `data:image/jpeg;base64,${savedPic}`;
+      }
+      setProfileImage(finalPic);
+    } else {
+      setProfileImage(DEFAULT_AVATAR);
+    }
   };
 
   useEffect(() => {
@@ -63,12 +81,43 @@ function Sidebar() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Image size should be less than 2MB");
+        return;
+      }
+
       const reader = new FileReader();
-      reader.onloadend = () => {
+      reader.onloadend = async () => {
         const base64Image = reader.result;
-        setProfileImage(base64Image);
-        
-        window.dispatchEvent(new Event("profileUpdated"));
+
+        const existingUser = JSON.parse(localStorage.getItem("user") || "{}");
+        const userId = existingUser?.user_id || existingUser?.userId;
+
+        try {
+          // 1. Permanent Save in Database (Spring Boot Backend API)
+          if (userId) {
+            await axios.put(`http://localhost:8080/api/users/${userId}/update-profile-pic`, {
+              profilePic: base64Image
+            });
+          }
+
+          // 2. Update Local Storage Sync
+          const updatedUser = {
+            ...existingUser,
+            profilePic: base64Image,
+            profile_pic: base64Image
+          };
+
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+          localStorage.setItem("userProfilePic", base64Image);
+
+          setProfileImage(base64Image);
+          window.dispatchEvent(new Event("profileUpdated"));
+
+        } catch (error) {
+          console.error("Failed to update profile pic in database:", error);
+          alert("Error saving profile image in Database!");
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -77,6 +126,8 @@ function Sidebar() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userProfilePic");
     navigate("/");
   };
 

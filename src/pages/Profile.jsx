@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import {
   FaUser,
   FaPhone,
@@ -7,46 +8,103 @@ import {
   FaArrowLeft,
   FaCheckCircle,
   FaUserEdit,
-  FaRegSave
+  FaRegSave,
+  FaCamera
 } from "react-icons/fa";
 import { useTheme } from "../context/ThemeContext";
+
+const DEFAULT_AVATAR = "https://via.placeholder.com/150";
 
 function Profile() {
   const navigate = useNavigate();
   const { darkMode } = useTheme();
 
   // Profile States
+  const [userId, setUserId] = useState(null);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [profilePic, setProfilePic] = useState("");
+  const [previewPic, setPreviewPic] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Initial Data Loading
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user")) || {};
-    const userEmail = user?.emailId || localStorage.getItem("userEmail") || "v12@gmail.com";
+    const userEmail = user?.emailId || localStorage.getItem("userEmail") || "";
 
+    setUserId(user?.user_id || null);
     setEmail(userEmail);
-    setFullName(user?.fullName || "");
-    setPhone(user?.phone || "");
+    setFullName(user?.full_name || user?.fullName || "");
+    setPhone(user?.mobile_no || user?.phone || "");
+
+    // DB se aayi hui photo ya localStorage ki photo setting
+    const savedPic = user?.profile_pic || localStorage.getItem("userProfilePic") || "";
+    setProfilePic(savedPic);
+    setPreviewPic(savedPic);
   }, []);
 
-  // Save Personal Info
-  const handleSaveInfo = (e) => {
+  // Handle Image Selection and Convert to Base64
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) { // 2MB Limit
+        setErrorMessage("Image size should be less than 2MB");
+        return;
+      }
+      setErrorMessage("");
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewPic(reader.result);
+        setProfilePic(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Save Personal Info & Profile Picture to Backend DB
+  const handleSaveInfo = async (e) => {
     e.preventDefault();
+    setErrorMessage("");
+    setSaveMessage("");
+
     const existingUser = JSON.parse(localStorage.getItem("user")) || {};
-    const updatedUser = {
-      ...existingUser,
-      fullName: fullName,
-      phone: phone,
-      emailId: email,
-    };
 
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-    window.dispatchEvent(new Event("profileUpdated"));
+    try {
+      // 1. Backend DB Update API Call for Profile Pic
+      if (userId && profilePic) {
+        await axios.put(`http://localhost:8080/api/users/${userId}/update-profile-pic`, {
+          profilePic: profilePic
+        });
+      }
 
-    setSaveMessage("Profile updated successfully!");
-    setTimeout(() => setSaveMessage(""), 3500);
+      // 2. Local Storage Syncing
+      const updatedUser = {
+        ...existingUser,
+        full_name: fullName,
+        fullName: fullName,
+        mobile_no: phone,
+        phone: phone,
+        emailId: email,
+        profile_pic: profilePic
+      };
+
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      if (profilePic) {
+        localStorage.setItem("userProfilePic", profilePic);
+      }
+
+      // Trigger custom event so TopBar/Sidebar re-renders avatar immediately
+      window.dispatchEvent(new Event("profileUpdated"));
+
+      setSaveMessage("Profile updated successfully in Database!");
+      setTimeout(() => setSaveMessage(""), 3500);
+
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      setErrorMessage("Failed to save profile picture in Database. Check backend.");
+    }
   };
 
   return (
@@ -103,7 +161,7 @@ function Profile() {
         </div>
       </div>
 
-      {/* Success Notification Alert */}
+      {/* Success Alert */}
       {saveMessage && (
         <div style={{
           display: "flex",
@@ -123,7 +181,22 @@ function Profile() {
         </div>
       )}
 
-      {/* Profile Form Card */}
+      {/* Error Alert */}
+      {errorMessage && (
+        <div style={{
+          background: "#ef4444",
+          color: "white",
+          padding: "14px 22px",
+          borderRadius: "14px",
+          marginBottom: "25px",
+          fontWeight: "600",
+          fontSize: "14px"
+        }}>
+          {errorMessage}
+        </div>
+      )}
+
+      {/* Profile Card */}
       <div style={{
         maxWidth: "800px",
         margin: "0 auto",
@@ -156,8 +229,53 @@ function Profile() {
               Personal Information
             </h2>
             <p style={{ margin: "2px 0 0 0", fontSize: "12px", color: darkMode ? "#94a3b8" : "#64748b" }}>
-              Update your personal info and contact details
+              Update your photo and personal details
             </p>
+          </div>
+        </div>
+
+        {/* Profile Avatar Upload Section */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "25px" }}>
+          <div style={{ position: "relative", width: "110px", height: "110px" }}>
+            <img
+              src={previewPic || DEFAULT_AVATAR}
+              alt="Profile Avatar"
+              style={{
+                width: "100%",
+                height: "100%",
+                borderRadius: "50%",
+                objectFit: "cover",
+                border: "3px solid #2563eb",
+                boxShadow: "0 8px 16px rgba(0,0,0,0.15)"
+              }}
+              onError={(e) => { e.target.src = DEFAULT_AVATAR; }}
+            />
+            <label
+              htmlFor="profilePicInput"
+              style={{
+                position: "absolute",
+                bottom: "0",
+                right: "0",
+                background: "#2563eb",
+                color: "white",
+                padding: "8px",
+                borderRadius: "50%",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 4px 10px rgba(0,0,0,0.2)"
+              }}
+            >
+              <FaCamera size={14} />
+            </label>
+            <input
+              type="file"
+              id="profilePicInput"
+              accept="image/*"
+              onChange={handleImageChange}
+              style={{ display: "none" }}
+            />
           </div>
         </div>
 
