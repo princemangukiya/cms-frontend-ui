@@ -6,10 +6,11 @@ const ForgotPassword = () => {
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
-        emailId: '',
+        email: '',
         newPassword: ''
     });
 
+    const [loading, setLoading] = useState(false);
     const [focusedInput, setFocusedInput] = useState(null);
     const [isHovered, setIsHovered] = useState(false);
     const [message, setMessage] = useState('');
@@ -53,7 +54,7 @@ const ForgotPassword = () => {
                         ctx.strokeStyle = `rgba(168, 85, 247, ${0.15 * (1 - distance / 110)})`;
                         ctx.lineWidth = 0.8;
                         ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].y, particles[j].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
                         ctx.stroke();
                     }
                 }
@@ -96,6 +97,7 @@ const ForgotPassword = () => {
         e.preventDefault();
         setMessage('');
         setError('');
+        setLoading(true);
 
         try {
             const response = await axios.post(
@@ -103,7 +105,8 @@ const ForgotPassword = () => {
                 formData
             );
 
-            setMessage(response.data);
+            setMessage(typeof response.data === 'string' ? response.data : "Password updated successfully!");
+
             setTimeout(() => {
                 navigate("/");
             }, 2000);
@@ -111,10 +114,12 @@ const ForgotPassword = () => {
         } catch (err) {
             console.error(err);
             if (err.response && err.response.data) {
-                setError(err.response.data);
+                setError(typeof err.response.data === 'string' ? err.response.data : "User not found with this email");
             } else {
-                setError("Something went wrong! Please try again.");
+                setError("Server Connection Error / Server down!");
             }
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -232,8 +237,7 @@ const ForgotPassword = () => {
             fontSize: '15px',
             color: '#ffffff',
             boxSizing: 'border-box',
-            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-            cursor: 'pointer'
+            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
         }),
         button: {
             width: '100%',
@@ -247,11 +251,12 @@ const ForgotPassword = () => {
             borderRadius: '16px',
             fontSize: '17px',
             fontWeight: '800',
-            cursor: 'pointer',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            opacity: loading ? 0.7 : 1,
             boxShadow: isHovered
                 ? '0 20px 40px rgba(168, 85, 247, 0.7), 0 0 20px rgba(236, 72, 153, 0.5)'
                 : '0 10px 25px rgba(168, 85, 247, 0.35)',
-            transform: isHovered ? 'translateY(-3px) scale(1.02)' : 'translateY(0) scale(1)',
+            transform: isHovered && !loading ? 'translateY(-3px) scale(1.02)' : 'translateY(0) scale(1)',
             transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
             letterSpacing: '0.6px'
         },
@@ -272,18 +277,22 @@ const ForgotPassword = () => {
         successMsg: {
             color: '#4ade80',
             backgroundColor: 'rgba(74, 222, 128, 0.1)',
+            border: '1px solid rgba(74, 222, 128, 0.2)',
             padding: '12px',
             borderRadius: '12px',
             marginBottom: '20px',
-            fontSize: '14px'
+            fontSize: '14px',
+            fontWeight: '600'
         },
         errorMsg: {
             color: '#f87171',
             backgroundColor: 'rgba(248, 113, 113, 0.1)',
+            border: '1px solid rgba(248, 113, 113, 0.2)',
             padding: '12px',
             borderRadius: '12px',
             marginBottom: '20px',
-            fontSize: '14px'
+            fontSize: '14px',
+            fontWeight: '600'
         }
     };
 
@@ -306,13 +315,13 @@ const ForgotPassword = () => {
                             <label style={styles.label}>Email Address</label>
                             <input
                                 type="email"
-                                name="emailId"
-                                value={formData.emailId}
+                                name="email"
+                                value={formData.email}
                                 onChange={handleChange}
-                                onFocus={() => setFocusedInput('emailId')}
+                                onFocus={() => setFocusedInput('email')}
                                 onBlur={() => setFocusedInput(null)}
                                 required
-                                style={styles.input(focusedInput === 'emailId')}
+                                style={styles.input(focusedInput === 'email')}
                             />
                         </div>
 
@@ -333,10 +342,11 @@ const ForgotPassword = () => {
                         <button
                             type="submit"
                             style={styles.button}
+                            disabled={loading}
                             onMouseEnter={() => setIsHovered(true)}
                             onMouseLeave={() => setIsHovered(false)}
                         >
-                            Update Password
+                            {loading ? "Updating..." : "Update Password"}
                         </button>
                     </form>
 
