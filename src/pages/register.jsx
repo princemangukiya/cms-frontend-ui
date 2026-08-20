@@ -98,6 +98,21 @@ const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // 1. Email Regex Validation
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(formData.emailId)) {
+            alert("Please enter a valid email address (e.g., example@domain.com)!");
+            return;
+        }
+
+        // 2. Mobile Number Exact 10 Digits Validation
+        const mobileRegex = /^[0-9]{10}$/;
+        if (!mobileRegex.test(formData.mobile_no)) {
+            alert("Mobile number must be exactly 10 digits!");
+            return;
+        }
+
         try {
             // 1. Register API Call
             const regRes = await axios.post('http://localhost:8080/api/users/register', formData, {
@@ -324,6 +339,7 @@ const Register = () => {
                                 onFocus={() => setFocusedInput('mobile_no')}
                                 onBlur={() => setFocusedInput(null)}
                                 autoComplete="off"
+                                maxLength={10}
                                 required
                             />
                         </div>
