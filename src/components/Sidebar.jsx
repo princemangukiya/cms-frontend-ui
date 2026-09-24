@@ -8,7 +8,11 @@ import {
   LogOut,
   Camera,
   GraduationCap,
-  ChevronRight
+  ChevronRight,
+  ShieldCheck,
+  Briefcase,
+  BookOpen,
+  BookmarkCheck
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 
@@ -22,6 +26,8 @@ function Sidebar() {
   const [userEmail, setUserEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [profileImage, setProfileImage] = useState(DEFAULT_AVATAR);
+  const [roleBadge, setRoleBadge] = useState({ text: "User", color: "#2563eb" });
+  const [roleId, setRoleId] = useState(4);
 
   const fileInputRef = useRef(null);
 
@@ -44,6 +50,25 @@ function Sidebar() {
       setDisplayName(rawName.charAt(0).toUpperCase() + rawName.slice(1).toLowerCase());
     } else {
       setDisplayName("User");
+    }
+
+    // Role detection for visual badge
+    const roleId = Number(user?.role_id || user?.roleId || user?.role?.role_id || 4);
+    setRoleId(roleId);
+    const roleName = String(user?.roleName || user?.role || "").toUpperCase();
+
+    if (roleName.includes("LIBRARIAN") || roleId === 5) {
+      setRoleBadge({ text: "Librarian Portal", color: "#eab308" });
+    } else if (roleName.includes("PLACEMENT") || roleId === 6) {
+      setRoleBadge({ text: "Placement Officer Portal", color: "#d946ef" });
+    } else if (roleName.includes("PRINCIPAL") || roleId === 2) {
+      setRoleBadge({ text: "Principal Portal", color: "#8b5cf6" });
+    } else if (roleName.includes("HOD") || roleId === 1) {
+      setRoleBadge({ text: "HOD Portal", color: "#d97706" });
+    } else if (roleName.includes("PROFESSOR") || roleId === 3) {
+      setRoleBadge({ text: "Professor Portal", color: "#10b981" });
+    } else {
+      setRoleBadge({ text: "Student Portal", color: "#2563eb" });
     }
 
     // Dynamic Image Fetch Logic (Syncs from DB/LocalStorage)
@@ -94,14 +119,12 @@ function Sidebar() {
         const userId = existingUser?.user_id || existingUser?.userId;
 
         try {
-          // 1. Permanent Save in Database (Spring Boot Backend API)
           if (userId) {
             await axios.put(`http://localhost:8080/api/users/${userId}/update-profile-pic`, {
               profilePic: base64Image
             });
           }
 
-          // 2. Update Local Storage Sync
           const updatedUser = {
             ...existingUser,
             profilePic: base64Image,
@@ -133,7 +156,6 @@ function Sidebar() {
 
   return (
     <>
-      {/* Component Specific Modern CSS */}
       <style>{`
         .cms-sidebar-link {
           display: flex;
@@ -214,33 +236,44 @@ function Sidebar() {
         left: 0,
         zIndex: 100
       }}>
-        {/* Brand Header */}
+        {/* Brand Header with Dynamic Role Badge */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '12px',
+          justifyVontent: 'space-between',
           marginBottom: '28px',
           paddingBottom: '16px',
           borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
         }}>
-          <div style={{
-            background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
-            padding: '10px',
-            borderRadius: '14px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 8px 18px rgba(37, 99, 235, 0.4)'
-          }}>
-            <GraduationCap size={24} color="#ffffff" />
-          </div>
-          <div>
-            <h2 style={{ fontSize: "19px", margin: 0, fontWeight: "800", letterSpacing: "-0.5px", color: "#ffffff" }}>
-              CMS Portal
-            </h2>
-            <span style={{ fontSize: "11px", color: "#94a3b8", fontWeight: "600" }}>
-              Management System
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              background: `linear-gradient(135deg, ${roleBadge.color} 0%, #3b82f6 100%)`,
+              padding: '10px',
+              borderRadius: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: `0 8px 18px ${roleBadge.color}55`
+            }}>
+              <GraduationCap size={24} color="#ffffff" />
+            </div>
+            <div>
+              <h2 style={{ fontSize: "19px", margin: 0, fontWeight: "800", letterSpacing: "-0.5px", color: "#ffffff" }}>
+                CMS Portal
+              </h2>
+              <span style={{
+                fontSize: "11px",
+                color: roleBadge.color,
+                fontWeight: "700",
+                background: `${roleBadge.color}22`,
+                padding: "2px 6px",
+                borderRadius: "6px",
+                display: "inline-block",
+                marginTop: "2px"
+              }}>
+                {roleBadge.text}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -274,7 +307,7 @@ function Sidebar() {
               borderRadius: "50%",
               cursor: "pointer",
               overflow: "hidden",
-              border: "2px solid #2563eb",
+              border: `2px solid ${roleBadge.color}`,
               boxShadow: "0 4px 12px rgba(0,0,0,0.3)"
             }}
             onClick={handleAvatarClick}
@@ -327,16 +360,61 @@ function Sidebar() {
             <ChevronRight size={14} style={{ opacity: 0.5 }} />
           </NavLink>
 
-          <NavLink to="/student" className="cms-sidebar-link">
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <Users size={18} />
-              <span>Student Portal</span>
-            </div>
-            <ChevronRight size={14} style={{ opacity: 0.5 }} />
-          </NavLink>
+          {/* Student Portal only for Non-Librarians & Non-Placement Officers */}
+          {roleId !== 5 && roleId !== 6 && (
+            <NavLink to="/student" className="cms-sidebar-link">
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <Users size={18} />
+                <span>Student Portal</span>
+              </div>
+              <ChevronRight size={14} style={{ opacity: 0.5 }} />
+            </NavLink>
+          )}
+
+          {/* Librarian specific links */}
+          {roleId === 5 && (
+            <>
+              <NavLink to="/library" className="cms-sidebar-link">
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <BookOpen size={18} />
+                  <span>Library</span>
+                </div>
+                <ChevronRight size={14} style={{ opacity: 0.5 }} />
+              </NavLink>
+
+              <NavLink to="/book-issue" className="cms-sidebar-link">
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <BookmarkCheck size={18} />
+                  <span>Book Issue</span>
+                </div>
+                <ChevronRight size={14} style={{ opacity: 0.5 }} />
+              </NavLink>
+            </>
+          )}
+
+          {/* Placement Officer specific links */}
+          {roleId === 6 && (
+            <>
+              <NavLink to="/placement" className="cms-sidebar-link">
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <Briefcase size={18} />
+                  <span>Company Placement</span>
+                </div>
+                <ChevronRight size={14} style={{ opacity: 0.5 }} />
+              </NavLink>
+
+              <NavLink to="/placement-student" className="cms-sidebar-link">
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <Users size={18} />
+                  <span>Placement Student</span>
+                </div>
+                <ChevronRight size={14} style={{ opacity: 0.5 }} />
+              </NavLink>
+            </>
+          )}
 
           <NavLink to="/profile" className="cms-sidebar-link">
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" >>
               <UserCheck size={18} />
               <span>Manage Profile</span>
             </div>

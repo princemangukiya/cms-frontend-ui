@@ -4,12 +4,13 @@
 
 .holiday-page {
     min-height: 100vh;
-    padding: 35px;
+    padding: 35px 20px;
     background: #f4f7fc;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     box-sizing: border-box;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 /* =========================
@@ -22,15 +23,10 @@
     margin: auto;
     background: #fff;
     border-radius: 24px;
-    padding: 35px;
+    overflow: hidden;
     box-shadow: 0 15px 40px rgba(25, 42, 70, 0.08);
     border: 1px solid #edf1f7;
     transition: 0.35s ease;
-}
-
-.holiday-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
 }
 
 /* =========================
@@ -38,31 +34,47 @@
 ========================= */
 
 .holiday-header {
+    background: linear-gradient(135deg, #d97706 0%, #f59e0b 50%, #fbbf24 100%);
+    padding: 32px 24px;
+    color: #ffffff;
     text-align: center;
-    margin-bottom: 35px;
 }
 
 .holiday-header h2 {
-    font-size: 34px;
-    color: #1e293b;
-    font-weight: 700;
-    margin-bottom: 10px;
+    font-size: 28px;
+    color: #ffffff;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.5px;
 }
 
 .holiday-header p {
-    color: #64748b;
-    font-size: 16px;
-    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    margin: 6px 0 0 0;
+    font-weight: 500;
 }
 
 /* =========================
-         Form
+         Form Section
 ========================= */
+
+.holiday-form {
+    padding: 32px;
+    border-bottom: 1px solid #edf1f7;
+}
+
+.holiday-form h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #1e293b;
+    font-size: 18px;
+}
 
 .input-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 25px;
+    gap: 20px;
 }
 
 .form-group {
@@ -71,20 +83,22 @@
 }
 
 .form-group label {
-    font-weight: 600;
-    color: #334155;
-    margin-bottom: 8px;
-    font-size: 14px;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 6px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .form-group input {
-    height: 55px;
-    border: 1px solid #dbe4ee;
-    border-radius: 14px;
-    padding: 0 18px;
-    font-size: 15px;
+    height: 48px;
+    border: 2px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 0 14px;
+    font-size: 14px;
     background: #f8fafc;
-    transition: 0.3s ease;
+    transition: 0.2s ease;
     box-sizing: border-box;
     width: 100%;
 }
@@ -92,8 +106,8 @@
 .form-group input:focus {
     outline: none;
     background: white;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
 }
 
 /* =========================
@@ -102,43 +116,100 @@
 
 .button-group {
     display: flex;
-    justify-content: center;
-    gap: 18px;
-    margin-top: 35px;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-top: 24px;
 }
 
 .save-btn {
     border: none;
-    border-radius: 14px;
-    padding: 14px 34px;
+    border-radius: 12px;
+    padding: 12px 32px;
     color: white;
     cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-    background: linear-gradient(135deg, #2563eb, #3b82f6);
-    transition: 0.35s ease;
+    font-size: 14px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.35);
+    transition: 0.2s ease;
 }
 
 .save-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.35);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(245, 158, 11, 0.45);
 }
 
 .reset-btn {
-    border: none;
-    border-radius: 14px;
-    padding: 14px 34px;
-    color: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 10px 20px;
+    color: #475569;
     cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    transition: 0.35s ease;
+    font-size: 14px;
+    font-weight: 700;
+    background: #f1f5f9;
+    transition: 0.2s ease;
 }
 
 .reset-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 24px rgba(239, 68, 68, 0.30);
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+}
+
+/* =========================
+      Table Section
+========================= */
+
+.holiday-list-section {
+    padding: 32px;
+}
+
+.table-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.table-header-row h3 {
+    margin: 0;
+    color: #1e293b;
+    font-size: 18px;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.holiday-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    color: #1e293b;
+}
+
+.holiday-table th {
+    background: #f1f5f9;
+    padding: 12px;
+    text-align: left;
+    font-weight: 700;
+    color: #475569;
+}
+
+.holiday-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.font-bold {
+    font-weight: 600;
+}
+
+.text-center {
+    text-align: center;
+    color: #64748b;
+    padding: 20px !important;
 }
 
 /* =========================
@@ -150,12 +221,9 @@
         grid-template-columns: 1fr;
     }
 
-    .button-group {
+    .table-header-row {
         flex-direction: column;
-    }
-
-    .save-btn,
-    .reset-btn {
-        width: 100%;
+        align-items: flex-start;
+        gap: 12px;
     }
 }

@@ -24,35 +24,38 @@ import PlacementStudent from "./pages/PlacementStudent";
 import ClassMgmt from "./pages/ClassMgmt";
 import Sports from "./pages/Sports";
 import FunctionPage from "./pages/Function";
+import NoticeBoard from "./pages/NoticeBoard";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
 
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-        <Route path="/student" element={<ProtectedRoute><Student /></ProtectedRoute>} />
-        <Route path="/staff" element={<ProtectedRoute><Staff /></ProtectedRoute>} />
-        <Route path="/course" element={<ProtectedRoute><Course /></ProtectedRoute>} />
-        <Route path="/subject" element={<ProtectedRoute><Subject /></ProtectedRoute>} />
-        <Route path="/result" element={<ProtectedRoute><Result /></ProtectedRoute>} />
-        <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
-        <Route path="/fees" element={<ProtectedRoute><Fees /></ProtectedRoute>} />
-        <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
-        <Route path="/exam" element={<ProtectedRoute><Exam /></ProtectedRoute>} />
-        <Route path="/book-issue" element={<ProtectedRoute><BookIssue /></ProtectedRoute>} />
+        <Route path="/student" element={<ProtectedRoute allowedRoles={[1, 2, 3, 4]}><Student /></ProtectedRoute>} />
+        <Route path="/staff" element={<ProtectedRoute allowedRoles={[1, 2]}><Staff /></ProtectedRoute>} />
+        <Route path="/course" element={<ProtectedRoute allowedRoles={[1, 2, 3, 4]}><Course /></ProtectedRoute>} />
+        <Route path="/subject" element={<ProtectedRoute allowedRoles={[1, 2, 3, 4]}><Subject /></ProtectedRoute>} />
+        <Route path="/result" element={<ProtectedRoute allowedRoles={[1, 2, 3, 4]}><Result /></ProtectedRoute>} />
+        <Route path="/attendance" element={<ProtectedRoute allowedRoles={[1, 2, 3, 4]}><Attendance /></ProtectedRoute>} />
+        <Route path="/fees" element={<ProtectedRoute allowedRoles={[1, 2, 4]}><Fees /></ProtectedRoute>} />
+        <Route path="/library" element={<ProtectedRoute allowedRoles={[1, 2, 3, 4, 5]}><Library /></ProtectedRoute>} />
+        <Route path="/exam" element={<ProtectedRoute allowedRoles={[1, 2, 3, 4]}><Exam /></ProtectedRoute>} />
+        <Route path="/book-issue" element={<ProtectedRoute allowedRoles={[2, 5]}><BookIssue /></ProtectedRoute>} />
         <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
-        <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
+        <Route path="/payment" element={<ProtectedRoute allowedRoles={[2, 4]}><Payment /></ProtectedRoute>} />
         <Route path="/holiday" element={<ProtectedRoute><Holiday /></ProtectedRoute>} />
-        <Route path="/placement" element={<ProtectedRoute><CompanyPlacement /></ProtectedRoute>} />
-        <Route path="/placement-student" element={<ProtectedRoute><PlacementStudent /></ProtectedRoute>} />
-        <Route path="/class-mgmt" element={<ProtectedRoute><ClassMgmt /></ProtectedRoute>} />
+        <Route path="/placement" element={<ProtectedRoute allowedRoles={[2, 6, 4]}><CompanyPlacement /></ProtectedRoute>} />
+        <Route path="/placement-student" element={<ProtectedRoute allowedRoles={[2, 6, 4]}><PlacementStudent /></ProtectedRoute>} />
+        <Route path="/class-mgmt" element={<ProtectedRoute allowedRoles={[1, 2]}><ClassMgmt /></ProtectedRoute>} />
         <Route path="/sports" element={<ProtectedRoute><Sports /></ProtectedRoute>} />
         <Route path="/function" element={<ProtectedRoute><FunctionPage /></ProtectedRoute>} />
+        <Route path="/notice-board" element={<ProtectedRoute><NoticeBoard /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );

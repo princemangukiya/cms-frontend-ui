@@ -2,54 +2,49 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
-  FaUser,
-  FaPhone,
-  FaEnvelope,
-  FaArrowLeft,
-  FaCheckCircle,
-  FaUserEdit,
-  FaRegSave,
-  FaCamera
+  FaUser, FaPhone, FaEnvelope, FaArrowLeft,
+  FaCheckCircle, FaCamera, FaSave, FaShieldAlt
 } from "react-icons/fa";
 import { useTheme } from "../context/ThemeContext";
 
-const DEFAULT_AVATAR = "https://via.placeholder.com/150";
+const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/847/847969.png";
 
 function Profile() {
   const navigate = useNavigate();
   const { darkMode } = useTheme();
 
-  // Profile States
   const [userId, setUserId] = useState(null);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [roleName, setRoleName] = useState("User");
   const [profilePic, setProfilePic] = useState("");
   const [previewPic, setPreviewPic] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Initial Data Loading
+  const roleNames = { 1: "HOD", 2: "Principal", 3: "Professor", 4: "Student" };
+
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user")) || {};
     const userEmail = user?.emailId || localStorage.getItem("userEmail") || "";
+    const roleId = Number(user?.role_id || user?.roleId || 4);
 
     setUserId(user?.user_id || null);
     setEmail(userEmail);
     setFullName(user?.full_name || user?.fullName || "");
     setPhone(user?.mobile_no || user?.phone || "");
+    setRoleName(roleNames[roleId] || "User");
 
-    // DB se aayi hui photo ya localStorage ki photo setting
     const savedPic = user?.profile_pic || localStorage.getItem("userProfilePic") || "";
     setProfilePic(savedPic);
     setPreviewPic(savedPic);
   }, []);
 
-  // Handle Image Selection and Convert to Base64
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) { // 2MB Limit
+      if (file.size > 2 * 1024 * 1024) {
         setErrorMessage("Image size should be less than 2MB");
         return;
       }
@@ -63,25 +58,51 @@ function Profile() {
     }
   };
 
-  // Save Personal Info & Profile Picture to Backend DB
+  // 10-Digit Mobile Restriction
+  const handlePhoneChange = (e) => {
+    const numericValue = e.target.value.replace(/\D/g, "").slice(0, 10);
+    setPhone(numericValue);
+  };
+
   const handleSaveInfo = async (e) => {
     e.preventDefault();
     setErrorMessage("");
     setSaveMessage("");
 
+    if (phone && phone.length !== 10) {
+      setErrorMessage("Mobile number must be exactly 10 digits!");
+      return;
+    }
+
     const existingUser = JSON.parse(localStorage.getItem("user")) || {};
+    const currentUserId = userId || existingUser?.user_id;
+
+    if (!currentUserId) {
+      setErrorMessage("User ID not found. Please login again.");
+      return;
+    }
 
     try {
-      // 1. Backend DB Update API Call for Profile Pic
-      if (userId && profilePic) {
-        await axios.put(`http://localhost:8080/api/users/${userId}/update-profile-pic`, {
-          profilePic: profilePic
-        });
+      const token = localStorage.getItem("token") || localStorage.getItem("jwtToken") || localStorage.getItem("accessToken");
+
+      if (!token) {
+        setErrorMessage("Authentication token not found. Please login again.");
+        return;
       }
 
-      // 2. Local Storage Syncing
+      const headers = { Authorization: `Bearer ${token}` };
+
+      if (profilePic) {
+        await axios.put(
+          `http://localhost:8080/api/users/${currentUserId}/update-profile-pic`,
+          { profilePic: profilePic },
+          { headers }
+        );
+      }
+
       const updatedUser = {
         ...existingUser,
+        user_id: currentUserId,
         full_name: fullName,
         fullName: fullName,
         mobile_no: phone,
@@ -95,311 +116,113 @@ function Profile() {
         localStorage.setItem("userProfilePic", profilePic);
       }
 
-      // Trigger custom event so TopBar/Sidebar re-renders avatar immediately
       window.dispatchEvent(new Event("profileUpdated"));
-
       setSaveMessage("Profile updated successfully in Database!");
       setTimeout(() => setSaveMessage(""), 3500);
 
     } catch (error) {
-      console.error("Error updating profile:", error);
-      setErrorMessage("Failed to save profile picture in Database. Check backend.");
+      console.error("Profile update error:", error);
+      setErrorMessage("Failed to update profile.");
     }
+  };
+
+  const themeStyles = {
+    bg: darkMode ? "linear-gradient(135deg, #090d16 0%, #111827 100%)" : "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+    cardBg: darkMode ? "#1e293b" : "#ffffff",
+    cardBorder: darkMode ? "rgba(255, 255, 255, 0.08)" : "#e2e8f0",
+    textPrimary: darkMode ? "#f8fafc" : "#0f172a",
+    textSecondary: darkMode ? "#94a3b8" : "#64748b",
+    inputBg: darkMode ? "#0f172a" : "#f8fafc",
+    inputBorder: darkMode ? "#334155" : "#cbd5e1",
   };
 
   return (
     <div style={{
-      minHeight: "100vh",
-      background: darkMode
-        ? "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)"
-        : "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
-      color: darkMode ? "#f8fafc" : "#0f172a",
-      padding: "35px 50px",
-      fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
-      transition: "all 0.3s ease",
-      boxSizing: "border-box"
+      minHeight: "100vh", width: "100vw", background: themeStyles.bg,
+      padding: "40px 20px", display: "flex", justifyContent: "center", alignItems: "center",
+      boxSizing: "border-box", fontFamily: "'Inter', sans-serif"
     }}>
-
-      {/* Top Header Section */}
       <div style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: "35px"
+        width: "100%", maxWidth: "560px", background: themeStyles.cardBg,
+        borderRadius: "28px", padding: "40px", border: `1px solid ${themeStyles.cardBorder}`,
+        boxShadow: "0 25px 60px rgba(0,0,0,0.15)"
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
-          <button
-            onClick={() => navigate("/dashboard")}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              background: darkMode ? "#1e293b" : "#ffffff",
-              color: darkMode ? "#38bdf8" : "#2563eb",
-              border: darkMode ? "1px solid #334155" : "1px solid #cbd5e1",
-              padding: "10px 20px",
-              borderRadius: "12px",
-              cursor: "pointer",
-              fontWeight: "600",
-              fontSize: "14px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-              transition: "all 0.2s ease"
-            }}
-            onMouseOver={(e) => e.currentTarget.style.transform = "translateX(-3px)"}
-            onMouseOut={(e) => e.currentTarget.style.transform = "translateX(0)"}
-          >
-            <FaArrowLeft /> Back to Dashboard
-          </button>
-          <div>
-            <h1 style={{ fontSize: "26px", fontWeight: "800", margin: 0, letterSpacing: "-0.5px" }}>
-              Account Settings
-            </h1>
-            <p style={{ margin: "3px 0 0 0", fontSize: "13px", color: darkMode ? "#94a3b8" : "#64748b" }}>
-              Manage your profile information and account details
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Success Alert */}
-      {saveMessage && (
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "12px",
-          background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-          color: "white",
-          padding: "14px 22px",
-          borderRadius: "14px",
-          marginBottom: "25px",
-          fontWeight: "600",
-          fontSize: "14px",
-          boxShadow: "0 8px 20px rgba(16, 185, 129, 0.25)"
-        }}>
-          <FaCheckCircle size={18} />
-          {saveMessage}
-        </div>
-      )}
-
-      {/* Error Alert */}
-      {errorMessage && (
-        <div style={{
-          background: "#ef4444",
-          color: "white",
-          padding: "14px 22px",
-          borderRadius: "14px",
-          marginBottom: "25px",
-          fontWeight: "600",
-          fontSize: "14px"
-        }}>
-          {errorMessage}
-        </div>
-      )}
-
-      {/* Profile Card */}
-      <div style={{
-        maxWidth: "800px",
-        margin: "0 auto",
-        background: darkMode ? "rgba(30, 41, 59, 0.7)" : "rgba(255, 255, 255, 0.8)",
-        backdropFilter: "blur(12px)",
-        padding: "35px",
-        borderRadius: "24px",
-        border: darkMode ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid rgba(255, 255, 255, 0.6)",
-        boxShadow: darkMode ? "0 20px 30px rgba(0, 0, 0, 0.3)" : "0 20px 30px rgba(0, 0, 0, 0.05)"
-      }}>
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "12px",
-          marginBottom: "28px",
-          paddingBottom: "15px",
-          borderBottom: darkMode ? "1px solid #334155" : "1px solid #f1f5f9"
-        }}>
-          <div style={{
-            background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-            color: "white",
-            padding: "10px",
-            borderRadius: "12px",
-            display: "flex"
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px" }}>
+          <button onClick={() => navigate('/dashboard')} style={{
+            display: "flex", alignItems: "center", gap: "8px", background: "none",
+            border: "none", color: "#6366f1", fontWeight: "700", cursor: "pointer", fontSize: "14px"
           }}>
-            <FaUserEdit size={18} />
-          </div>
-          <div>
-            <h2 style={{ fontSize: "18px", fontWeight: "700", margin: 0 }}>
-              Personal Information
-            </h2>
-            <p style={{ margin: "2px 0 0 0", fontSize: "12px", color: darkMode ? "#94a3b8" : "#64748b" }}>
-              Update your photo and personal details
-            </p>
-          </div>
+            <FaArrowLeft /> Dashboard
+          </button>
+          <span style={{
+            display: "flex", alignItems: "center", gap: "6px", background: "rgba(99, 102, 241, 0.12)",
+            color: "#6366f1", padding: "6px 14px", borderRadius: "10px", fontSize: "13px", fontWeight: "700"
+          }}>
+            <FaShieldAlt /> {roleName}
+          </span>
         </div>
 
-        {/* Profile Avatar Upload Section */}
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: "25px" }}>
-          <div style={{ position: "relative", width: "110px", height: "110px" }}>
+        {/* Profile Avatar with Camera Upload */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "30px" }}>
+          <div style={{ position: "relative" }}>
             <img
               src={previewPic || DEFAULT_AVATAR}
-              alt="Profile Avatar"
+              alt="Avatar"
               style={{
-                width: "100%",
-                height: "100%",
-                borderRadius: "50%",
-                objectFit: "cover",
-                border: "3px solid #2563eb",
-                boxShadow: "0 8px 16px rgba(0,0,0,0.15)"
+                width: "110px", height: "110px", borderRadius: "50%",
+                objectFit: "cover", border: "4px solid #6366f1",
+                boxShadow: "0 10px 25px rgba(99, 102, 241, 0.3)"
               }}
-              onError={(e) => { e.target.src = DEFAULT_AVATAR; }}
             />
-            <label
-              htmlFor="profilePicInput"
-              style={{
-                position: "absolute",
-                bottom: "0",
-                right: "0",
-                background: "#2563eb",
-                color: "white",
-                padding: "8px",
-                borderRadius: "50%",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 4px 10px rgba(0,0,0,0.2)"
-              }}
-            >
+            <label style={{
+              position: "absolute", bottom: "0", right: "0", background: "#6366f1",
+              color: "#ffffff", padding: "8px", borderRadius: "50%", cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 10px rgba(0,0,0,0.3)"
+            }}>
               <FaCamera size={14} />
+              <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: "none" }} />
             </label>
-            <input
-              type="file"
-              id="profilePicInput"
-              accept="image/*"
-              onChange={handleImageChange}
-              style={{ display: "none" }}
-            />
           </div>
+          <h2 style={{ margin: "14px 0 2px 0", color: themeStyles.textPrimary, fontSize: "22px", fontWeight: "800" }}>{fullName || "User Profile"}</h2>
+          <p style={{ margin: 0, color: themeStyles.textSecondary, fontSize: "13px" }}>{email}</p>
         </div>
 
-        <form onSubmit={handleSaveInfo} style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
-            {/* Full Name Input */}
-            <div>
-              <label style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                fontSize: "13px",
-                fontWeight: "600",
-                marginBottom: "8px",
-                color: darkMode ? "#cbd5e1" : "#475569"
-              }}>
-                <FaUser size={12} color="#3b82f6" /> Full Name
-              </label>
-              <input
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="Enter your full name"
-                required
-                style={{
-                  width: "100%",
-                  padding: "12px 16px",
-                  borderRadius: "12px",
-                  border: darkMode ? "1px solid #334155" : "1px solid #cbd5e1",
-                  background: darkMode ? "#0f172a" : "#f8fafc",
-                  color: darkMode ? "#f8fafc" : "#0f172a",
-                  fontSize: "14px",
-                  outline: "none",
-                  boxSizing: "border-box"
-                }}
-              />
-            </div>
+        {saveMessage && <div style={{ background: "rgba(16, 185, 129, 0.15)", border: "1px solid #10b981", color: "#10b981", padding: "12px", borderRadius: "12px", marginBottom: "20px", fontWeight: "600", fontSize: "13px", textAlign: "center" }}>{saveMessage}</div>}
+        {errorMessage && <div style={{ background: "rgba(239, 68, 68, 0.15)", border: "1px solid #ef4444", color: "#ef4444", padding: "12px", borderRadius: "12px", marginBottom: "20px", fontWeight: "600", fontSize: "13px", textAlign: "center" }}>{errorMessage}</div>}
 
-            {/* Phone Number Input */}
-            <div>
-              <label style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                fontSize: "13px",
-                fontWeight: "600",
-                marginBottom: "8px",
-                color: darkMode ? "#cbd5e1" : "#475569"
-              }}>
-                <FaPhone size={12} color="#3b82f6" /> Phone Number
-              </label>
-              <input
-                type="text"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="Enter phone number"
-                style={{
-                  width: "100%",
-                  padding: "12px 16px",
-                  borderRadius: "12px",
-                  border: darkMode ? "1px solid #334155" : "1px solid #cbd5e1",
-                  background: darkMode ? "#0f172a" : "#f8fafc",
-                  color: darkMode ? "#f8fafc" : "#0f172a",
-                  fontSize: "14px",
-                  outline: "none",
-                  boxSizing: "border-box"
-                }}
-              />
-            </div>
+        <form onSubmit={handleSaveInfo} autoComplete="off" style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <label style={{ fontSize: "12px", fontWeight: "700", color: themeStyles.textSecondary }}>FULL NAME</label>
+            <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required style={{ padding: "12px 16px", borderRadius: "12px", border: `1.5px solid ${themeStyles.inputBorder}`, background: themeStyles.inputBg, color: themeStyles.textPrimary, outline: "none" }} />
           </div>
 
-          {/* Email Field (Disabled) */}
-          <div>
-            <label style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              fontSize: "13px",
-              fontWeight: "600",
-              marginBottom: "8px",
-              color: darkMode ? "#cbd5e1" : "#475569"
-            }}>
-              <FaEnvelope size={12} color="#64748b" /> Email Address <span style={{ fontSize: "11px", color: "#94a3b8" }}>(Read Only)</span>
-            </label>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <label style={{ fontSize: "12px", fontWeight: "700", color: themeStyles.textSecondary }}>EMAIL (READ ONLY)</label>
+            <input type="email" value={email} readOnly style={{ padding: "12px 16px", borderRadius: "12px", border: `1.5px solid ${themeStyles.inputBorder}`, background: themeStyles.inputBg, color: themeStyles.textSecondary, outline: "none", opacity: 0.8 }} />
+          </div>
+
+          {/* 10-Digit Mobile */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <label style={{ fontSize: "12px", fontWeight: "700", color: themeStyles.textSecondary }}>MOBILE NUMBER (10 DIGITS)</label>
             <input
-              type="email"
-              value={email}
-              disabled
-              style={{
-                width: "100%",
-                padding: "12px 16px",
-                borderRadius: "12px",
-                border: darkMode ? "1px solid #1e293b" : "1px solid #e2e8f0",
-                background: darkMode ? "#0f172a" : "#f1f5f9",
-                color: darkMode ? "#64748b" : "#94a3b8",
-                fontSize: "14px",
-                cursor: "not-allowed",
-                boxSizing: "border-box"
-              }}
+              type="tel"
+              value={phone}
+              onChange={handlePhoneChange}
+              placeholder="Enter 10-digit mobile number"
+              maxLength={10}
+              required
+              style={{ padding: "12px 16px", borderRadius: "12px", border: `1.5px solid ${themeStyles.inputBorder}`, background: themeStyles.inputBg, color: themeStyles.textPrimary, outline: "none" }}
             />
           </div>
 
-          {/* Submit Button */}
-          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "15px" }}>
-            <button
-              type="submit"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
-                color: "white",
-                border: "none",
-                padding: "13px 28px",
-                borderRadius: "12px",
-                fontSize: "14px",
-                fontWeight: "700",
-                cursor: "pointer",
-                boxShadow: "0 8px 18px rgba(37, 99, 235, 0.3)"
-              }}
-            >
-              <FaRegSave size={16} /> Save Changes
-            </button>
-          </div>
+          <button type="submit" style={{
+            padding: "14px", background: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)",
+            color: "white", border: "none", borderRadius: "14px", fontWeight: "700", cursor: "pointer",
+            marginTop: "12px", boxShadow: "0 10px 25px rgba(99, 102, 241, 0.35)", fontSize: "15px"
+          }}>
+            Save Profile Changes
+          </button>
         </form>
       </div>
     </div>

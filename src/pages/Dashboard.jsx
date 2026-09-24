@@ -16,7 +16,13 @@ import {
   FaBuilding,
   FaMoneyBillWave,
   FaComments,
-  FaTrophy
+  FaTrophy,
+  FaCamera,
+  FaFolderOpen,
+  FaEye,
+  FaTimes,
+  FaCheck,
+  FaRedo
 } from 'react-icons/fa';
 import TopBar from "../components/TopBar";
 import { useTheme } from "../context/ThemeContext";
@@ -36,7 +42,7 @@ const moduleConfig = {
   Feedback: { icon: FaComments, color: "#f43f5e", bgLight: "#ffe4e6", bgDark: "rgba(244, 63, 94, 0.2)" },
   Fees: { icon: FaDollarSign, color: "#4f46e5", bgLight: "#e0e7ff", bgDark: "rgba(79, 70, 229, 0.2)" },
   Holiday: { icon: FaRegCalendarAlt, color: "#f97316", bgLight: "#ffedd5", bgDark: "rgba(249, 115, 22, 0.2)" },
-  Library: { icon: FaBookOpen, color: "#06b6d4", bgLight: "#cffafe", bgDark: "rgba(6, 182, 212, 0.2)" },
+  Library: { icon: FaBookOpen, color: "#06b6d4", bgLight: "#cffafe", bgDark: "rgba(6, 182, 1212, 0.2)" },
   Payment: { icon: FaMoneyBillWave, color: "#10b981", bgLight: "#d1fae5", bgDark: "rgba(16, 185, 129, 0.2)" },
   "Company Placement": { icon: FaBuilding, color: "#d946ef", bgLight: "#fae8ff", bgDark: "rgba(217, 70, 239, 0.2)" },
   "Placement Student": { icon: FaSuitcase, color: "#a855f7", bgLight: "#f3e8ff", bgDark: "rgba(168, 85, 247, 0.2)" },
@@ -51,15 +57,46 @@ function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [userEmail, setUserEmail] = useState('');
+  const [roleId, setRoleId] = useState(() => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user")) || {};
+      return Number(user?.role_id || user?.roleId || user?.role?.role_id || 4);
+    } catch {
+      return 4;
+    }
+  });
   const [profileImage, setProfileImage] = useState(DEFAULT_AVATAR);
 
   const fileInputRef = useRef(null);
+  const videoRef = useRef(null);
+
+  const [showPhotoOptionsModal, setShowPhotoOptionsModal] = useState(false);
+  const [showCameraModal, setShowCameraModal] = useState(false);
+  const [cameraStream, setCameraStream] = useState(null);
+  const [capturedPhoto, setCapturedPhoto] = useState(null);
+  const [cameraError, setCameraError] = useState(null);
+  const [savingPhoto, setSavingPhoto] = useState(false);
+
+  const getRoleName = (id) => {
+    switch (Number(id)) {
+      case 1: return "HOD";
+      case 2: return "Principal";
+      case 3: return "Professor";
+      case 4: return "Student";
+      case 5: return "Librarian";
+      case 6: return "Placement Officer";
+      default: return "User";
+    }
+  };
 
   const loadUserData = () => {
     try {
       const user = JSON.parse(localStorage.getItem("user")) || {};
       const email = user?.emailId || user?.email_id || user?.email || "";
       setUserEmail(email);
+
+      const currentRoleId = user?.role_id || user?.roleId || user?.role?.role_id || 4;
+      setRoleId(Number(currentRoleId));
 
       if (user?.fullName && user.fullName.trim() !== '') {
         setDisplayName(user.fullName);
@@ -95,15 +132,16 @@ function Dashboard() {
     };
   }, []);
 
+  // When clicking avatar or edit icon, open options modal (Browse or Camera)
   const handleAvatarClick = () => {
-    fileInputRef.current?.click();
+    setShowPhotoOptionsModal(true);
   };
 
   const handleOpenImageInBrowser = (e) => {
-    e.stopPropagation();
+    e?.stopPropagation();
 
     if (!profileImage || profileImage === DEFAULT_AVATAR) {
-      handleAvatarClick();
+      setShowPhotoOptionsModal(true);
       return;
     }
 
@@ -136,6 +174,55 @@ function Dashboard() {
     }
   };
 
+  // Reusable function to save Base64 photo to Database & sync LocalStorage
+  const saveProfilePicToDatabase = async (base64Image) => {
+    setSavingPhoto(true);
+    try {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const userId = user?.user_id || user?.userId || user?.id;
+
+      if (!userId) {
+        alert("User ID missing! Please login again.");
+        return;
+      }
+
+      const token = localStorage.getItem("token") || localStorage.getItem("jwtToken") || localStorage.getItem("accessToken");
+      if (!token) {
+        alert("Authentication token not found. Please login again.");
+        return;
+      }
+
+      await axios.put(
+        `http://localhost:8080/api/users/${userId}/update-profile-pic`,
+        { profilePic: base64Image },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+      setProfileImage(base64Image);
+      localStorage.setItem("userProfilePic", base64Image);
+
+      user.profile_pic = base64Image;
+      user.profilePic = base64Image;
+      localStorage.setItem("user", JSON.stringify(user));
+
+      window.dispatchEvent(new Event("profileUpdated"));
+      window.dispatchEvent(new Event("storage"));
+
+      alert("Profile picture updated & saved in Database!");
+    } catch (err) {
+      console.error("Failed to save picture in Database:", err);
+      alert("Database connection failed or unauthorized. Could not save photo.");
+    } finally {
+      setSavingPhoto(false);
+    }
+  };
+
+  // Handle file selected from File Explorer
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -147,41 +234,121 @@ function Dashboard() {
       const reader = new FileReader();
       reader.onloadend = async () => {
         const base64Image = reader.result;
-
-        try {
-          const user = JSON.parse(localStorage.getItem("user") || "{}");
-          const userId = user?.user_id || user?.userId || user?.id;
-
-          if (!userId) {
-            alert("User ID missing! Please login again.");
-            return;
-          }
-
-          // Database Update API Hit
-          await axios.put(`http://localhost:8080/api/users/${userId}/update-profile-pic`, {
-            profilePic: base64Image
-          });
-
-          // Local Sync
-          setProfileImage(base64Image);
-          localStorage.setItem("userProfilePic", base64Image);
-
-          user.profile_pic = base64Image;
-          user.profilePic = base64Image;
-          localStorage.setItem("user", JSON.stringify(user));
-
-          window.dispatchEvent(new Event("profileUpdated"));
-          window.dispatchEvent(new Event("storage"));
-
-          alert("Profile picture saved in Database!");
-        } catch (err) {
-          console.error("Failed to save picture in Database:", err);
-          alert("Database connection failed. Could not save photo.");
-        }
+        await saveProfilePicToDatabase(base64Image);
+        setShowPhotoOptionsModal(false);
       };
       reader.readAsDataURL(file);
     }
+    e.target.value = "";
   };
+
+  // Start live webcam stream
+  const handleStartCamera = async () => {
+    setShowPhotoOptionsModal(false);
+    setShowCameraModal(true);
+    setCapturedPhoto(null);
+    setCameraError(null);
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" },
+        audio: false
+      });
+      setCameraStream(stream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+      }
+    } catch (err) {
+      console.error("Camera access error:", err);
+      setCameraError(
+        "Could not access camera. Please ensure camera permissions are allowed in your browser settings."
+      );
+    }
+  };
+
+  // Stop camera and close modal
+  const handleStopCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      setCameraStream(null);
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    setShowCameraModal(false);
+    setCapturedPhoto(null);
+    setCameraError(null);
+  };
+
+  // Capture still photo from video stream
+  const handleCapturePhoto = () => {
+    if (videoRef.current) {
+      const video = videoRef.current;
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      const ctx = canvas.getContext("2d");
+      
+      // Mirror the snapshot horizontally to match the webcam selfie preview
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const base64 = canvas.toDataURL("image/jpeg", 0.9);
+      setCapturedPhoto(base64);
+
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        setCameraStream(null);
+      }
+    }
+  };
+
+  // Retake photo: restart webcam
+  const handleRetakePhoto = async () => {
+    setCapturedPhoto(null);
+    setCameraError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" },
+        audio: false
+      });
+      setCameraStream(stream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play().catch(e => console.warn("Video play interrupted:", e));
+      }
+    } catch (err) {
+      console.error("Camera retake error:", err);
+      setCameraError("Could not restart camera. Please verify camera permissions.");
+    }
+  };
+
+  // Attach camera stream to video whenever camera modal and stream are active
+  useEffect(() => {
+    if (showCameraModal && cameraStream && videoRef.current && !capturedPhoto) {
+      videoRef.current.srcObject = cameraStream;
+      videoRef.current.play().catch(e => console.warn("Video play interrupted:", e));
+    }
+  }, [showCameraModal, cameraStream, capturedPhoto]);
+
+  // Confirm captured photo and save to Database
+  const handleConfirmCapturedPhoto = async () => {
+    if (capturedPhoto) {
+      await saveProfilePicToDatabase(capturedPhoto);
+      handleStopCamera();
+    }
+  };
+
+  // Ensure camera stream is stopped if component unmounts
+  useEffect(() => {
+    return () => {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [cameraStream]);
 
   const menuItems = [
     { name: "Student", path: "/student" },
@@ -202,12 +369,99 @@ function Dashboard() {
     { name: "Placement Student", path: "/placement-student" },
   ];
 
-  const filteredMenuItems = menuItems.filter((item) =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const getButtonText = (moduleName) => {
+    // 💼 Role 6: Placement Officer Access Rules
+    if (roleId === 6) {
+      if (["Company Placement", "Placement Student"].includes(moduleName)) {
+        return "Add Detail";
+      }
+      return "View Detail";
+    }
+
+    // 📚 Role 5: Librarian Access Rules
+    if (roleId === 5) {
+      if (["Library", "Book Issue"].includes(moduleName)) {
+        return "Add Detail";
+      }
+      return "View Detail";
+    }
+
+    // 👨‍🏫 Role 3: Professor Access Rules
+    if (roleId === 3) {
+      if (["Fees", "Payment"].includes(moduleName)) {
+        return "No Access";
+      }
+      if (["Attendance", "Feedback", "Result"].includes(moduleName)) {
+        return "Add Detail";
+      }
+      return "View Detail";
+    }
+
+    // 👑 Role 2: Principal Access Rules
+    if (roleId === 2) {
+      if (["Result", "Book Issue", "Payment", "Library", "Company Placement", "Placement Student"].includes(moduleName)) {
+        return "View Detail";
+      }
+      return "Add Detail";
+    }
+
+    // 👔 Role 1: HOD Access Rules
+    if (roleId === 1) {
+      if (moduleName === "Payment") {
+        return "No Access";
+      }
+      const hodViewOnlyModules = ["Result", "Holiday", "Fees", "Book Issue", "Library", "Company Placement", "Placement Student"];
+      if (hodViewOnlyModules.includes(moduleName)) {
+        return "View Detail";
+      }
+      return "Add Detail";
+    }
+
+    // 🎓 Role 4: Student Access Rules
+    if (roleId === 4) {
+      if (moduleName === "Payment") return "Pay Detail";
+      if (moduleName === "Feedback") return "Add Feedback";
+      return "View Detail";
+    }
+
+    return "View Detail";
+  };
+
+  const filteredMenuItems = menuItems
+    .filter((item) => {
+      // 🔒 Librarian (Role 5) ko strictly sirf 2 modules dikhenge: Library & Book Issue
+      if (roleId === 5) {
+        return item.name === "Library" || item.name === "Book Issue";
+      }
+      // 💼 Placement Officer (Role 6) ko strictly sirf 2 modules dikhenge: Company Placement & Placement Student
+      if (roleId === 6) {
+        return item.name === "Company Placement" || item.name === "Placement Student";
+      }
+      // 🏛️ HOD (Role 1) login hone par Payment module completely remove / hide rahega (show hi nahi hona chahiye)
+      if (roleId === 1 && item.name === "Payment") {
+        return false;
+      }
+      // 👨‍🏫 Professor (Role 3) has authority over Students: NO access to Staff, Class Mgmt, Fees, and Payment
+      if (roleId === 3 && (item.name === "Staff" || item.name === "Class Mgmt" || item.name === "Fees" || item.name === "Payment")) {
+        return false;
+      }
+      // 🔒 Student (Role 4) has NO access to Staff, Class Mgmt, and Book Issue
+      if (roleId === 4 && (item.name === "Staff" || item.name === "Class Mgmt" || item.name === "Book Issue")) {
+        return false;
+      }
+      return true;
+    })
+    .filter((item) =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
   const handleLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem("token");
+    localStorage.removeItem("jwtToken");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userProfilePic");
     navigate("/");
   };
 
@@ -256,7 +510,6 @@ function Dashboard() {
         transition: "all 0.3s ease",
         zIndex: 20
       }}>
-        {/* Brand Title */}
         <div style={{ display: "flex", alignItems: "center", gap: "10px", paddingLeft: "6px" }}>
           <div style={{
             width: "12px",
@@ -277,7 +530,6 @@ function Dashboard() {
           </h2>
         </div>
 
-        {/* Profile Card */}
         <div style={{
           background: themeStyles.profileBg,
           backdropFilter: "blur(12px)",
@@ -287,6 +539,8 @@ function Dashboard() {
           flexDirection: "column",
           alignItems: "center",
           textAlign: "center",
+          width: "100%",
+          boxSizing: "border-box",
           border: `1px solid ${themeStyles.profileBorder}`,
           boxShadow: darkMode ? "0 10px 30px rgba(0,0,0,0.3)" : "0 10px 20px rgba(0,0,0,0.03)",
           transition: "all 0.3s ease"
@@ -299,9 +553,10 @@ function Dashboard() {
             style={{ display: "none" }}
           />
 
+          {/* Profile Avatar with Edit Badge */}
           <div
-            onClick={handleOpenImageInBrowser}
-            title="Click to view full image in browser tab"
+            onClick={handleAvatarClick}
+            title="Click to change profile picture or view options"
             style={{
               position: "relative",
               width: "80px",
@@ -356,13 +611,34 @@ function Dashboard() {
             </div>
           </div>
 
-          <span style={{ fontSize: "11px", color: themeStyles.textSecondary, letterSpacing: "1.5px", fontWeight: "800" }}>
+          <span style={{ fontSize: "11px", color: themeStyles.textSecondary, letterSpacing: "1.5px", fontWeight: "800", width: "100%", textAlign: "center" }}>
             WELCOME BACK
           </span>
-          <span style={{ fontSize: "18px", fontWeight: "800", color: themeStyles.textPrimary, marginTop: "4px", letterSpacing: "-0.3px" }}>
+
+          {/* Role Badge */}
+          <div style={{
+            background: "linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(168, 85, 247, 0.18) 100%)",
+            color: "#6366f1",
+            padding: "4px 16px",
+            borderRadius: "14px",
+            fontSize: "11px",
+            fontWeight: "800",
+            margin: "8px 0",
+            border: "1px solid rgba(99, 102, 241, 0.35)",
+            letterSpacing: "0.5px",
+            boxShadow: "0 3px 10px rgba(99, 102, 241, 0.12)",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}>
+            {getRoleName(roleId)}
+          </div>
+
+          <span style={{ fontSize: "18px", fontWeight: "800", color: themeStyles.textPrimary, letterSpacing: "-0.3px", width: "100%", textAlign: "center" }}>
             {displayName}
           </span>
-          <span style={{ fontSize: "12px", color: themeStyles.textSecondary, marginTop: "2px", wordBreak: "break-all", maxWidth: "100%", fontWeight: "500" }}>
+
+          <span style={{ fontSize: "12px", color: themeStyles.textSecondary, marginTop: "6px", wordBreak: "break-all", maxWidth: "100%", fontWeight: "500", textAlign: "center" }}>
             {userEmail}
           </span>
 
@@ -374,7 +650,9 @@ function Dashboard() {
               fontWeight: "700",
               cursor: "pointer",
               marginTop: "12px",
-              transition: "opacity 0.2s ease"
+              transition: "opacity 0.2s ease",
+              textAlign: "center",
+              width: "100%"
             }}
             onMouseOver={(e) => e.target.style.opacity = "0.75"}
             onMouseOut={(e) => e.target.style.opacity = "1"}
@@ -412,7 +690,6 @@ function Dashboard() {
           </button>
         </div>
 
-        {/* Navigation Links */}
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           <div
             style={{
@@ -434,61 +711,188 @@ function Dashboard() {
             <FaChartBar size={18} /> Home Dashboard
           </div>
 
-          <div
-            style={{
-              cursor: "pointer",
-              fontSize: "14px",
-              color: themeStyles.navBtnText,
-              padding: "14px 18px",
-              background: themeStyles.navBtnBg,
-              border: `1px solid ${themeStyles.profileBorder}`,
-              borderRadius: "16px",
-              fontWeight: "600",
-              display: "flex",
-              alignItems: "center",
-              gap: "14px",
-              transition: "all 0.3s ease"
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = "translateX(4px)";
-              e.currentTarget.style.color = themeStyles.textPrimary;
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = "translateX(0)";
-              e.currentTarget.style.color = themeStyles.navBtnText;
-            }}
-            onClick={() => navigate("/sports")}
-          >
-            <FaTrophy size={18} color="#f59e0b" /> Sports
-          </div>
+          {/* Non-Librarians & Non-Placement: Sports & Function */}
+          {roleId !== 5 && roleId !== 6 && (
+            <>
+              <div
+                style={{
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  color: themeStyles.navBtnText,
+                  padding: "14px 18px",
+                  background: themeStyles.navBtnBg,
+                  border: `1px solid ${themeStyles.profileBorder}`,
+                  borderRadius: "16px",
+                  fontWeight: "600",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "14px",
+                  transition: "all 0.3s ease"
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = "translateX(4px)";
+                  e.currentTarget.style.color = themeStyles.textPrimary;
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = "translateX(0)";
+                  e.currentTarget.style.color = themeStyles.navBtnText;
+                }}
+                onClick={() => navigate("/sports")}
+              >
+                <FaTrophy size={18} color="#f59e0b" /> Sports
+              </div>
 
-          <div
-            style={{
-              cursor: "pointer",
-              fontSize: "14px",
-              color: themeStyles.navBtnText,
-              padding: "14px 18px",
-              background: themeStyles.navBtnBg,
-              border: `1px solid ${themeStyles.profileBorder}`,
-              borderRadius: "16px",
-              fontWeight: "600",
-              display: "flex",
-              alignItems: "center",
-              gap: "14px",
-              transition: "all 0.3s ease"
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = "translateX(4px)";
-              e.currentTarget.style.color = themeStyles.textPrimary;
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = "translateX(0)";
-              e.currentTarget.style.color = themeStyles.navBtnText;
-            }}
-            onClick={() => navigate("/function")}
-          >
-            <FaRegCalendarAlt size={18} color="#ec4899" /> Function
-          </div>
+              <div
+                style={{
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  color: themeStyles.navBtnText,
+                  padding: "14px 18px",
+                  background: themeStyles.navBtnBg,
+                  border: `1px solid ${themeStyles.profileBorder}`,
+                  borderRadius: "16px",
+                  fontWeight: "600",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "14px",
+                  transition: "all 0.3s ease"
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = "translateX(4px)";
+                  e.currentTarget.style.color = themeStyles.textPrimary;
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = "translateX(0)";
+                  e.currentTarget.style.color = themeStyles.navBtnText;
+                }}
+                onClick={() => navigate("/function")}
+              >
+                <FaRegCalendarAlt size={18} color="#ec4899" /> Function
+              </div>
+            </>
+          )}
+
+          {/* Librarian (Role 5): Direct quick links to Library and Book Issue */}
+          {roleId === 5 && (
+            <>
+              <div
+                style={{
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  color: themeStyles.navBtnText,
+                  padding: "14px 18px",
+                  background: themeStyles.navBtnBg,
+                  border: `1px solid ${themeStyles.profileBorder}`,
+                  borderRadius: "16px",
+                  fontWeight: "600",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "14px",
+                  transition: "all 0.3s ease"
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = "translateX(4px)";
+                  e.currentTarget.style.color = themeStyles.textPrimary;
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = "translateX(0)";
+                  e.currentTarget.style.color = themeStyles.navBtnText;
+                }}
+                onClick={() => navigate("/library")}
+              >
+                <FaBookOpen size={18} color="#06b6d4" /> Library
+              </div>
+
+              <div
+                style={{
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  color: themeStyles.navBtnText,
+                  padding: "14px 18px",
+                  background: themeStyles.navBtnBg,
+                  border: `1px solid ${themeStyles.profileBorder}`,
+                  borderRadius: "16px",
+                  fontWeight: "600",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "14px",
+                  transition: "all 0.3s ease"
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = "translateX(4px)";
+                  e.currentTarget.style.color = themeStyles.textPrimary;
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = "translateX(0)";
+                  e.currentTarget.style.color = themeStyles.navBtnText;
+                }}
+                onClick={() => navigate("/book-issue")}
+              >
+                <FaTasks size={18} color="#eab308" /> Book Issue
+              </div>
+            </>
+          )}
+
+          {/* Placement Officer (Role 6): Direct quick links to Company Placement and Placement Student */}
+          {roleId === 6 && (
+            <>
+              <div
+                style={{
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  color: themeStyles.navBtnText,
+                  padding: "14px 18px",
+                  background: themeStyles.navBtnBg,
+                  border: `1px solid ${themeStyles.profileBorder}`,
+                  borderRadius: "16px",
+                  fontWeight: "600",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "14px",
+                  transition: "all 0.3s ease"
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = "translateX(4px)";
+                  e.currentTarget.style.color = themeStyles.textPrimary;
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = "translateX(0)";
+                  e.currentTarget.style.color = themeStyles.navBtnText;
+                }}
+                onClick={() => navigate("/placement")}
+              >
+                <FaBuilding size={18} color="#d946ef" /> Company Detail
+              </div>
+
+              <div
+                style={{
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  color: themeStyles.navBtnText,
+                  padding: "14px 18px",
+                  background: themeStyles.navBtnBg,
+                  border: `1px solid ${themeStyles.profileBorder}`,
+                  borderRadius: "16px",
+                  fontWeight: "600",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "14px",
+                  transition: "all 0.3s ease"
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = "translateX(4px)";
+                  e.currentTarget.style.color = themeStyles.textPrimary;
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = "translateX(0)";
+                  e.currentTarget.style.color = themeStyles.navBtnText;
+                }}
+                onClick={() => navigate("/placement-student")}
+              >
+                <FaSuitcase size={18} color="#a855f7" /> Placement Student
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -497,14 +901,123 @@ function Dashboard() {
         <TopBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
         <div style={{
-          fontSize: "28px",
-          fontWeight: "800",
-          margin: "32px 0 28px 0",
-          color: themeStyles.textPrimary,
-          letterSpacing: "-0.8px"
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          margin: "32px 0 28px 0"
         }}>
-          Dashboard Overview
+          <div style={{
+            fontSize: "28px",
+            fontWeight: "800",
+            color: themeStyles.textPrimary,
+            letterSpacing: "-0.8px"
+          }}>
+            Dashboard Overview
+          </div>
+
+          {roleId === 2 && (
+            <div style={{
+              background: "linear-gradient(135deg, #d97706 0%, #b45309 100%)",
+              color: "#ffffff",
+              padding: "8px 16px",
+              borderRadius: "12px",
+              fontSize: "13px",
+              fontWeight: "700",
+              boxShadow: "0 4px 12px rgba(217, 119, 6, 0.3)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px"
+            }}>
+              👑 Principal Section
+            </div>
+          )}
+
+          {roleId === 1 && (
+            <div style={{
+              background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+              color: "#ffffff",
+              padding: "8px 16px",
+              borderRadius: "12px",
+              fontSize: "13px",
+              fontWeight: "700",
+              boxShadow: "0 4px 12px rgba(37, 99, 235, 0.3)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px"
+            }}>
+              👔 HOD Section
+            </div>
+          )}
+
+          {roleId === 4 && (
+            <div style={{
+              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+              color: "#ffffff",
+              padding: "8px 16px",
+              borderRadius: "12px",
+              fontSize: "13px",
+              fontWeight: "700",
+              boxShadow: "0 4px 12px rgba(16, 185, 129, 0.3)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px"
+            }}>
+              🎓 Student Section
+            </div>
+          )}
+
+          {roleId === 3 && (
+            <div style={{
+              background: "linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)",
+              color: "#ffffff",
+              padding: "8px 16px",
+              borderRadius: "12px",
+              fontSize: "13px",
+              fontWeight: "700",
+              boxShadow: "0 4px 12px rgba(139, 92, 246, 0.3)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px"
+            }}>
+              👨‍🏫 Professor Section
+            </div>
+          )}
+{roleId === 5 && (
+            <div style={{
+              background: "linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)",
+              color: "#ffffff",
+              padding: "8px 16px",
+              borderRadius: "12px",
+              fontSize: "13px",
+              fontWeight: "700",
+              boxShadow: "0 4px 12px rgba(139, 92, 246, 0.3)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px"
+            }}>
+              Librarian Section
+            </div>
+          )}
+
+          {roleId === 6 && (
+                      <div style={{
+                        background: "linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)",
+                        color: "#ffffff",
+                        padding: "8px 16px",
+                        borderRadius: "12px",
+                        fontSize: "13px",
+                        fontWeight: "700",
+                        boxShadow: "0 4px 12px rgba(139, 92, 246, 0.3)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px"
+                      }}>
+                        Placement Section
+                      </div>
+                    )}
+
         </div>
+
 
         <div style={{
           display: "grid",
@@ -516,6 +1029,8 @@ function Dashboard() {
               const config = moduleConfig[item.name] || moduleConfig.Student;
               const IconComponent = config.icon;
               const cardIconBg = darkMode ? config.bgDark : config.bgLight;
+              const btnText = getButtonText(item.name);
+              const isViewOnly = btnText === "View Detail";
 
               return (
                 <div
@@ -562,6 +1077,23 @@ function Dashboard() {
                     pointerEvents: "none"
                   }} />
 
+                  {isViewOnly && (
+                    <span style={{
+                      position: "absolute",
+                      top: "12px",
+                      right: "14px",
+                      fontSize: "10px",
+                      fontWeight: "700",
+                      padding: "3px 8px",
+                      borderRadius: "6px",
+                      background: "rgba(2, 132, 199, 0.15)",
+                      color: "#0284c7",
+                      border: "1px solid rgba(2, 132, 199, 0.3)"
+                    }}>
+                      👁️ View Only
+                    </span>
+                  )}
+
                   <div style={{
                     background: cardIconBg,
                     padding: "20px",
@@ -580,24 +1112,38 @@ function Dashboard() {
                   </h3>
 
                   <button
-                    onClick={() => navigate(item.path)}
+                    disabled={btnText === "No Access"}
+                    onClick={() => {
+                      if (btnText !== "No Access") {
+                        navigate(item.path);
+                      }
+                    }}
                     style={{
-                      background: `linear-gradient(135deg, ${config.color} 0%, #a855f7 100%)`,
+                      background: btnText === "No Access"
+                        ? "#94a3b8"
+                        : isViewOnly
+                        ? "linear-gradient(135deg, #0284c7 0%, #06b6d4 100%)"
+                        : `linear-gradient(135deg, ${config.color} 0%, #a855f7 100%)`,
                       color: "white",
                       border: "none",
                       padding: "12px 18px",
                       borderRadius: "16px",
                       fontSize: "14px",
                       fontWeight: "700",
-                      cursor: "pointer",
+                      cursor: btnText === "No Access" ? "not-allowed" : "pointer",
                       width: "100%",
-                      boxShadow: `0 8px 18px ${config.color}35`,
-                      transition: "all 0.3s ease"
+                      boxShadow: btnText === "No Access" ? "none" : `0 8px 18px ${config.color}35`,
+                      transition: "all 0.3s ease",
+                      opacity: btnText === "No Access" ? 0.7 : 1
                     }}
-                    onMouseOver={(e) => e.currentTarget.style.opacity = "0.9"}
-                    onMouseOut={(e) => e.currentTarget.style.opacity = "1"}
+                    onMouseOver={(e) => {
+                      if (btnText !== "No Access") e.currentTarget.style.opacity = "0.9";
+                    }}
+                    onMouseOut={(e) => {
+                      if (btnText !== "No Access") e.currentTarget.style.opacity = "1";
+                    }}
                   >
-                    Add Detail
+                    {btnText}
                   </button>
                 </div>
               );
@@ -609,6 +1155,575 @@ function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* 1. Photo Options Modal (Browse vs Camera vs View) */}
+      {showPhotoOptionsModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(15, 23, 42, 0.7)",
+            backdropFilter: "blur(6px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 99999,
+            padding: "20px"
+          }}
+          onClick={() => setShowPhotoOptionsModal(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: darkMode ? "#1e293b" : "#ffffff",
+              color: themeStyles.textPrimary,
+              borderRadius: "24px",
+              padding: "28px 24px",
+              width: "100%",
+              maxWidth: "440px",
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.4)",
+              border: darkMode ? "1px solid rgba(255, 255, 255, 0.12)" : "1px solid #e2e8f0",
+              position: "relative"
+            }}
+          >
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setShowPhotoOptionsModal(false)}
+              style={{
+                position: "absolute",
+                top: "18px",
+                right: "18px",
+                background: darkMode ? "#334155" : "#f1f5f9",
+                border: "none",
+                borderRadius: "50%",
+                width: "36px",
+                height: "36px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: themeStyles.textSecondary,
+                cursor: "pointer",
+                transition: "all 0.2s ease"
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.transform = "rotate(90deg)")}
+              onMouseOut={(e) => (e.currentTarget.style.transform = "rotate(0deg)")}
+            >
+              <FaTimes size={16} />
+            </button>
+
+            {/* Header */}
+            <div style={{ textAlign: "center", marginBottom: "24px" }}>
+              <div
+                style={{
+                  width: "56px",
+                  height: "56px",
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #6366f1, #a855f7)",
+                  color: "#ffffff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 14px",
+                  boxShadow: "0 8px 18px rgba(99, 102, 241, 0.35)"
+                }}
+              >
+                <FaCamera size={26} />
+              </div>
+              <h3 style={{ margin: "0 0 6px", fontSize: "20px", fontWeight: "800", color: themeStyles.textPrimary }}>
+                Profile Photo Options
+              </h3>
+              <p style={{ margin: 0, fontSize: "13px", color: themeStyles.textSecondary }}>
+                Choose an option to update or view your picture
+              </p>
+            </div>
+
+            {/* Options List */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {/* Option 1: Browse / Upload from Computer */}
+              <button
+                type="button"
+                onClick={() => {
+                  fileInputRef.current?.click();
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "16px",
+                  padding: "14px 18px",
+                  borderRadius: "16px",
+                  border: darkMode ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid #e2e8f0",
+                  background: darkMode ? "#0f172a" : "#f8fafc",
+                  color: themeStyles.textPrimary,
+                  cursor: "pointer",
+                  textAlign: "left",
+                  transition: "all 0.2s ease"
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.borderColor = "#6366f1";
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.borderColor = darkMode ? "rgba(255, 255, 255, 0.08)" : "#e2e8f0";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+              >
+                <div
+                  style={{
+                    width: "44px",
+                    height: "44px",
+                    borderRadius: "12px",
+                    background: "rgba(99, 102, 241, 0.15)",
+                    color: "#6366f1",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0
+                  }}
+                >
+                  <FaFolderOpen size={20} />
+                </div>
+                <div>
+                  <div style={{ fontWeight: "700", fontSize: "15px" }}>Upload from Computer</div>
+                  <div style={{ fontSize: "12px", color: themeStyles.textSecondary, marginTop: "2px" }}>
+                    Select image file (JPG, PNG, WebP up to 2MB)
+                  </div>
+                </div>
+              </button>
+
+              {/* Option 2: Live Camera Capture */}
+              <button
+                type="button"
+                onClick={handleStartCamera}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "16px",
+                  padding: "14px 18px",
+                  borderRadius: "16px",
+                  border: darkMode ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid #e2e8f0",
+                  background: darkMode ? "#0f172a" : "#f8fafc",
+                  color: themeStyles.textPrimary,
+                  cursor: "pointer",
+                  textAlign: "left",
+                  transition: "all 0.2s ease"
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.borderColor = "#ec4899";
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.borderColor = darkMode ? "rgba(255, 255, 255, 0.08)" : "#e2e8f0";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+              >
+                <div
+                  style={{
+                    width: "44px",
+                    height: "44px",
+                    borderRadius: "12px",
+                    background: "rgba(236, 72, 153, 0.15)",
+                    color: "#ec4899",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0
+                  }}
+                >
+                  <FaCamera size={20} />
+                </div>
+                <div>
+                  <div style={{ fontWeight: "700", fontSize: "15px" }}>Take Photo with Camera</div>
+                  <div style={{ fontSize: "12px", color: themeStyles.textSecondary, marginTop: "2px" }}>
+                    Capture directly using your device webcam
+                  </div>
+                </div>
+              </button>
+
+              {/* Option 3: View Full Image in New Tab */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  setShowPhotoOptionsModal(false);
+                  handleOpenImageInBrowser(e);
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "16px",
+                  padding: "14px 18px",
+                  borderRadius: "16px",
+                  border: darkMode ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid #e2e8f0",
+                  background: darkMode ? "#0f172a" : "#f8fafc",
+                  color: themeStyles.textPrimary,
+                  cursor: "pointer",
+                  textAlign: "left",
+                  transition: "all 0.2s ease"
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.borderColor = "#10b981";
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.borderColor = darkMode ? "rgba(255, 255, 255, 0.08)" : "#e2e8f0";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+              >
+                <div
+                  style={{
+                    width: "44px",
+                    height: "44px",
+                    borderRadius: "12px",
+                    background: "rgba(16, 185, 129, 0.15)",
+                    color: "#10b981",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0
+                  }}
+                >
+                  <FaEye size={20} />
+                </div>
+                <div>
+                  <div style={{ fontWeight: "700", fontSize: "15px" }}>View Current Photo</div>
+                  <div style={{ fontSize: "12px", color: themeStyles.textSecondary, marginTop: "2px" }}>
+                    Open current photo in a new browser tab
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            <div style={{ marginTop: "20px", textAlign: "center" }}>
+              <button
+                type="button"
+                onClick={() => setShowPhotoOptionsModal(false)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: themeStyles.textSecondary,
+                  fontSize: "13px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  padding: "8px 16px",
+                  borderRadius: "8px"
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2. Live Camera Modal */}
+      {showCameraModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(15, 23, 42, 0.8)",
+            backdropFilter: "blur(8px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 99999,
+            padding: "20px"
+          }}
+          onClick={handleStopCamera}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: darkMode ? "#1e293b" : "#ffffff",
+              color: themeStyles.textPrimary,
+              borderRadius: "24px",
+              padding: "24px",
+              width: "100%",
+              maxWidth: "520px",
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+              border: darkMode ? "1px solid rgba(255, 255, 255, 0.12)" : "1px solid #e2e8f0",
+              position: "relative"
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "18px"
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "10px",
+                    background: "linear-gradient(135deg, #6366f1, #a855f7)",
+                    color: "#ffffff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}
+                >
+                  <FaCamera size={18} />
+                </div>
+                <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "800" }}>
+                  {capturedPhoto ? "Photo Preview" : "Take Live Photo"}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={handleStopCamera}
+                disabled={savingPhoto}
+                style={{
+                  background: darkMode ? "#334155" : "#f1f5f9",
+                  border: "none",
+                  borderRadius: "50%",
+                  width: "34px",
+                  height: "34px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: themeStyles.textSecondary,
+                  cursor: savingPhoto ? "not-allowed" : "pointer"
+                }}
+              >
+                <FaTimes size={15} />
+              </button>
+            </div>
+
+            {/* Error state */}
+            {cameraError ? (
+              <div
+                style={{
+                  padding: "24px",
+                  borderRadius: "16px",
+                  background: "rgba(239, 68, 68, 0.1)",
+                  border: "1px solid rgba(239, 68, 68, 0.25)",
+                  color: "#ef4444",
+                  textAlign: "center",
+                  margin: "12px 0 20px"
+                }}
+              >
+                <p style={{ margin: "0 0 16px", fontSize: "14px", fontWeight: "600" }}>
+                  {cameraError}
+                </p>
+                <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+                  <button
+                    type="button"
+                    onClick={handleStartCamera}
+                    style={{
+                      background: "#ef4444",
+                      color: "#ffffff",
+                      border: "none",
+                      padding: "8px 16px",
+                      borderRadius: "10px",
+                      fontSize: "13px",
+                      fontWeight: "700",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Try Again
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleStopCamera}
+                    style={{
+                      background: darkMode ? "#334155" : "#e2e8f0",
+                      color: themeStyles.textPrimary,
+                      border: "none",
+                      padding: "8px 16px",
+                      borderRadius: "10px",
+                      fontSize: "13px",
+                      fontWeight: "600",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                {/* Video Preview or Captured Photo */}
+                <div
+                  style={{
+                    position: "relative",
+                    width: "100%",
+                    height: "320px",
+                    borderRadius: "18px",
+                    overflow: "hidden",
+                    backgroundColor: "#000000",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "inset 0 0 20px rgba(0,0,0,0.5)"
+                  }}
+                >
+                  {capturedPhoto ? (
+                    <img
+                      src={capturedPhoto}
+                      alt="Captured snapshot"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover"
+                      }}
+                    />
+                  ) : (
+                    <video
+                      ref={videoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        transform: "scaleX(-1)"
+                      }}
+                    />
+                  )}
+
+                  {/* Saving Overlay */}
+                  {savingPhoto && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        background: "rgba(0, 0, 0, 0.75)",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#ffffff",
+                        gap: "12px",
+                        zIndex: 10
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: "36px",
+                          height: "36px",
+                          border: "3px solid rgba(255, 255, 255, 0.3)",
+                          borderTopColor: "#6366f1",
+                          borderRadius: "50%",
+                          animation: "spin 1s linear infinite"
+                        }}
+                      />
+                      <span style={{ fontSize: "14px", fontWeight: "700" }}>
+                        Saving to Database...
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Control Actions */}
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "12px",
+                    marginTop: "20px",
+                    justifyContent: "center"
+                  }}
+                >
+                  {!capturedPhoto ? (
+                    <button
+                      type="button"
+                      onClick={handleCapturePhoto}
+                      disabled={savingPhoto || !cameraStream}
+                      style={{
+                        flex: 1,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "10px",
+                        background: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)",
+                        color: "#ffffff",
+                        border: "none",
+                        padding: "14px 24px",
+                        borderRadius: "14px",
+                        fontSize: "15px",
+                        fontWeight: "700",
+                        cursor: (!cameraStream || savingPhoto) ? "not-allowed" : "pointer",
+                        boxShadow: "0 8px 20px rgba(99, 102, 241, 0.35)",
+                        transition: "all 0.2s ease",
+                        opacity: (!cameraStream || savingPhoto) ? 0.6 : 1
+                      }}
+                    >
+                      <FaCamera size={18} />
+                      Capture Photo
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={handleRetakePhoto}
+                        disabled={savingPhoto}
+                        style={{
+                          flex: 1,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "8px",
+                          background: darkMode ? "#334155" : "#f1f5f9",
+                          color: themeStyles.textPrimary,
+                          border: darkMode ? "1px solid rgba(255, 255, 255, 0.1)" : "1px solid #cbd5e1",
+                          padding: "14px 20px",
+                          borderRadius: "14px",
+                          fontSize: "14px",
+                          fontWeight: "700",
+                          cursor: savingPhoto ? "not-allowed" : "pointer",
+                          transition: "all 0.2s ease"
+                        }}
+                      >
+                        <FaRedo size={15} />
+                        Retake
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleConfirmCapturedPhoto}
+                        disabled={savingPhoto}
+                        style={{
+                          flex: 1,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "8px",
+                          background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                          color: "#ffffff",
+                          border: "none",
+                          padding: "14px 20px",
+                          borderRadius: "14px",
+                          fontSize: "14px",
+                          fontWeight: "700",
+                          cursor: savingPhoto ? "not-allowed" : "pointer",
+                          boxShadow: "0 8px 20px rgba(16, 185, 129, 0.35)",
+                          transition: "all 0.2s ease"
+                        }}
+                      >
+                        <FaCheck size={16} />
+                        {savingPhoto ? "Saving..." : "Use This Photo"}
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
