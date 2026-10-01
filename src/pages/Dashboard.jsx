@@ -22,7 +22,11 @@ import {
   FaEye,
   FaTimes,
   FaCheck,
-  FaRedo
+  FaRedo,
+  FaSignOutAlt,
+  FaUserCog,
+  FaBullhorn,
+  FaShieldAlt
 } from 'react-icons/fa';
 import TopBar from "../components/TopBar";
 import { useTheme } from "../context/ThemeContext";
@@ -510,67 +514,82 @@ function Dashboard() {
         transition: "all 0.3s ease",
         zIndex: 20
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", paddingLeft: "6px" }}>
+        {/* Brand Header */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          paddingBottom: "18px",
+          borderBottom: `1px solid ${themeStyles.profileBorder}`
+        }}>
           <div style={{
-            width: "12px",
-            height: "24px",
+            width: "42px",
+            height: "42px",
             background: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)",
-            borderRadius: "6px"
-          }} />
-          <h2 style={{
-            fontSize: "24px",
-            margin: "0",
-            fontWeight: "800",
-            letterSpacing: "-0.5px",
-            background: "linear-gradient(135deg, #6366f1 0%, #ec4899 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent"
+            borderRadius: "12px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#ffffff",
+            boxShadow: "0 8px 18px rgba(99, 102, 241, 0.35)",
+            flexShrink: 0
           }}>
-            CMS Portal
-          </h2>
+            <FaUserGraduate size={22} />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <h2 style={{
+              fontSize: "20px",
+              margin: 0,
+              fontWeight: "800",
+              letterSpacing: "-0.5px",
+              background: "linear-gradient(135deg, #6366f1 0%, #ec4899 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent"
+            }}>
+              CMS Portal
+            </h2>
+            <span style={{
+              fontSize: "11px",
+              fontWeight: "700",
+              color: themeStyles.textSecondary,
+              letterSpacing: "0.5px",
+              marginTop: "2px"
+            }}>
+              Academic ERP System
+            </span>
+          </div>
         </div>
 
+        {/* Circular DP Profile Section (Directly under CMS Portal) */}
         <div style={{
-          background: themeStyles.profileBg,
-          backdropFilter: "blur(12px)",
-          padding: "24px 18px",
-          borderRadius: "24px",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           textAlign: "center",
-          width: "100%",
-          boxSizing: "border-box",
+          padding: "16px 12px 14px 12px",
+          borderRadius: "20px",
+          background: themeStyles.profileBg,
           border: `1px solid ${themeStyles.profileBorder}`,
-          boxShadow: darkMode ? "0 10px 30px rgba(0,0,0,0.3)" : "0 10px 20px rgba(0,0,0,0.03)",
+          boxShadow: darkMode ? "0 8px 24px rgba(0,0,0,0.25)" : "0 4px 16px rgba(0,0,0,0.03)",
           transition: "all 0.3s ease"
         }}>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleImageChange}
-            accept="image/*"
-            style={{ display: "none" }}
-          />
-
-          {/* Profile Avatar with Edit Badge */}
+          {/* Circular DP Avatar */}
           <div
             onClick={handleAvatarClick}
-            title="Click to change profile picture or view options"
+            title="Click to view or change profile photo"
             style={{
               position: "relative",
-              width: "80px",
-              height: "80px",
+              width: "72px",
+              height: "72px",
               borderRadius: "50%",
               cursor: "pointer",
               padding: "3px",
               background: "linear-gradient(135deg, #6366f1, #a855f7, #ec4899)",
-              boxShadow: "0 8px 20px rgba(168, 85, 247, 0.35)",
-              marginBottom: "14px",
-              transition: "transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+              boxShadow: "0 8px 22px rgba(99, 102, 241, 0.35)",
+              transition: "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)"
             }}
-            onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.08)"}
-            onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
+            onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.06)")}
+            onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
           >
             <div style={{
               width: "100%",
@@ -582,133 +601,153 @@ function Dashboard() {
             }}>
               <img
                 src={profileImage}
-                alt="Profile Avatar"
+                alt={displayName}
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 onError={(e) => { e.target.src = DEFAULT_AVATAR; }}
               />
+              {/* Camera Hover Overlay */}
               <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleAvatarClick();
-                }}
-                title="Upload/Change Picture"
                 style={{
                   position: "absolute",
-                  bottom: "0",
-                  right: "0",
-                  background: "rgba(15, 23, 42, 0.85)",
+                  inset: 0,
+                  background: "rgba(15, 23, 42, 0.65)",
                   color: "#ffffff",
-                  fontSize: "10px",
-                  width: "100%",
-                  textAlign: "center",
-                  padding: "3px 0",
-                  fontWeight: "700",
-                  letterSpacing: "0.5px"
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  opacity: 0,
+                  transition: "opacity 0.2s ease"
                 }}
+                onMouseOver={(e) => (e.currentTarget.style.opacity = 1)}
+                onMouseOut={(e) => (e.currentTarget.style.opacity = 0)}
               >
-                ✏️ Edit
+                <FaCamera size={18} />
               </div>
             </div>
+
+            {/* Online Active Dot */}
+            <span
+              style={{
+                position: "absolute",
+                bottom: "2px",
+                right: "2px",
+                width: "13px",
+                height: "13px",
+                backgroundColor: "#10b981",
+                border: `2.5px solid ${themeStyles.sidebarBg}`,
+                borderRadius: "50%",
+                boxShadow: "0 2px 5px rgba(0,0,0,0.2)"
+              }}
+              title="Active • Online"
+            />
           </div>
 
-          <span style={{ fontSize: "11px", color: themeStyles.textSecondary, letterSpacing: "1.5px", fontWeight: "800", width: "100%", textAlign: "center" }}>
-            WELCOME BACK
-          </span>
-
-          {/* Role Badge */}
-          <div style={{
-            background: "linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(168, 85, 247, 0.18) 100%)",
-            color: "#6366f1",
-            padding: "4px 16px",
-            borderRadius: "14px",
-            fontSize: "11px",
-            fontWeight: "800",
-            margin: "8px 0",
-            border: "1px solid rgba(99, 102, 241, 0.35)",
-            letterSpacing: "0.5px",
-            boxShadow: "0 3px 10px rgba(99, 102, 241, 0.12)",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center"
-          }}>
-            {getRoleName(roleId)}
-          </div>
-
-          <span style={{ fontSize: "18px", fontWeight: "800", color: themeStyles.textPrimary, letterSpacing: "-0.3px", width: "100%", textAlign: "center" }}>
-            {displayName}
-          </span>
-
-          <span style={{ fontSize: "12px", color: themeStyles.textSecondary, marginTop: "6px", wordBreak: "break-all", maxWidth: "100%", fontWeight: "500", textAlign: "center" }}>
-            {userEmail}
-          </span>
-
-          <span
+          {/* User Name (ONLY Name, NO Student) */}
+          <div
             onClick={() => navigate("/profile")}
             style={{
-              fontSize: "13px",
-              color: "#6366f1",
-              fontWeight: "700",
+              fontSize: "16px",
+              fontWeight: "800",
+              color: themeStyles.textPrimary,
+              marginTop: "10px",
               cursor: "pointer",
-              marginTop: "12px",
-              transition: "opacity 0.2s ease",
-              textAlign: "center",
-              width: "100%"
+              letterSpacing: "-0.2px",
+              maxWidth: "100%",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              transition: "color 0.2s ease"
             }}
-            onMouseOver={(e) => e.target.style.opacity = "0.75"}
-            onMouseOut={(e) => e.target.style.opacity = "1"}
+            onMouseOver={(e) => (e.target.style.color = "#6366f1")}
+            onMouseOut={(e) => (e.target.style.color = themeStyles.textPrimary)}
+            title="Click to manage profile"
           >
-            Manage Profile →
-          </span>
+            {displayName}
+          </div>
 
+          {/* Sleek Modern Log Out Button directly under Name */}
           <button
+            type="button"
+            onClick={handleLogout}
             style={{
-              background: "rgba(239, 68, 68, 0.08)",
-              border: "1px solid rgba(239, 68, 68, 0.3)",
+              marginTop: "10px",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              padding: "7px 22px",
+              borderRadius: "20px",
+              background: darkMode
+                ? "rgba(239, 68, 68, 0.12)"
+                : "rgba(239, 68, 68, 0.08)",
+              border: "1px solid rgba(239, 68, 68, 0.28)",
               color: "#ef4444",
-              padding: "10px 20px",
-              borderRadius: "14px",
-              cursor: "pointer",
-              fontSize: "13px",
+              fontSize: "12px",
               fontWeight: "700",
-              marginTop: "16px",
-              transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-              width: "100%"
+              letterSpacing: "0.3px",
+              cursor: "pointer",
+              transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+              boxShadow: "0 2px 6px rgba(239, 68, 68, 0.06)"
             }}
             onMouseOver={(e) => {
-              e.target.style.background = "#ef4444";
-              e.target.style.color = "#ffffff";
-              e.target.style.boxShadow = "0 8px 20px rgba(239, 68, 68, 0.35)";
+              e.currentTarget.style.background = "linear-gradient(135deg, #ef4444, #dc2626)";
+              e.currentTarget.style.color = "#ffffff";
+              e.currentTarget.style.borderColor = "transparent";
+              e.currentTarget.style.boxShadow = "0 6px 18px rgba(239, 68, 68, 0.35)";
+              e.currentTarget.style.transform = "translateY(-1px) scale(1.02)";
             }}
             onMouseOut={(e) => {
-              e.target.style.background = "rgba(239, 68, 68, 0.08)";
-              e.target.style.color = "#ef4444";
-              e.target.style.boxShadow = "none";
+              e.currentTarget.style.background = darkMode ? "rgba(239, 68, 68, 0.12)" : "rgba(239, 68, 68, 0.08)";
+              e.currentTarget.style.color = "#ef4444";
+              e.currentTarget.style.borderColor = "rgba(239, 68, 68, 0.28)";
+              e.currentTarget.style.boxShadow = "0 2px 6px rgba(239, 68, 68, 0.06)";
+              e.currentTarget.style.transform = "translateY(0) scale(1)";
             }}
-            onClick={handleLogout}
+            title="Log Out of CMS"
           >
-            Log Out
+            <FaSignOutAlt size={12} /> Log Out
           </button>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        {/* Hidden File Input for photo uploads */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleImageChange}
+          accept="image/*"
+          style={{ display: "none" }}
+        />
+
+        {/* Navigation Section */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px", flex: 1, overflowY: "auto" }}>
+          <div style={{
+            fontSize: "11px",
+            fontWeight: "800",
+            letterSpacing: "1px",
+            color: themeStyles.textSecondary,
+            padding: "0 8px 8px 8px"
+          }}>
+            MAIN NAVIGATION
+          </div>
+
           <div
             style={{
               cursor: "pointer",
               fontSize: "14px",
               color: "#ffffff",
-              padding: "14px 18px",
+              padding: "12px 16px",
               background: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)",
-              borderRadius: "16px",
+              borderRadius: "14px",
               fontWeight: "700",
               display: "flex",
               alignItems: "center",
-              gap: "14px",
-              boxShadow: "0 10px 25px rgba(99, 102, 241, 0.35)",
+              gap: "12px",
+              boxShadow: "0 8px 20px rgba(99, 102, 241, 0.35)",
               transition: "transform 0.2s ease"
             }}
             onClick={() => navigate("/dashboard")}
           >
-            <FaChartBar size={18} /> Home Dashboard
+            <FaChartBar size={16} /> Home Dashboard
           </div>
 
           {/* Non-Librarians & Non-Placement: Sports & Function */}
@@ -719,15 +758,15 @@ function Dashboard() {
                   cursor: "pointer",
                   fontSize: "14px",
                   color: themeStyles.navBtnText,
-                  padding: "14px 18px",
+                  padding: "12px 16px",
                   background: themeStyles.navBtnBg,
                   border: `1px solid ${themeStyles.profileBorder}`,
-                  borderRadius: "16px",
+                  borderRadius: "14px",
                   fontWeight: "600",
                   display: "flex",
                   alignItems: "center",
-                  gap: "14px",
-                  transition: "all 0.3s ease"
+                  gap: "12px",
+                  transition: "all 0.25s ease"
                 }}
                 onMouseOver={(e) => {
                   e.currentTarget.style.transform = "translateX(4px)";
@@ -739,7 +778,7 @@ function Dashboard() {
                 }}
                 onClick={() => navigate("/sports")}
               >
-                <FaTrophy size={18} color="#f59e0b" /> Sports
+                <FaTrophy size={16} color="#f59e0b" /> Sports & Athletics
               </div>
 
               <div
@@ -747,15 +786,15 @@ function Dashboard() {
                   cursor: "pointer",
                   fontSize: "14px",
                   color: themeStyles.navBtnText,
-                  padding: "14px 18px",
+                  padding: "12px 16px",
                   background: themeStyles.navBtnBg,
                   border: `1px solid ${themeStyles.profileBorder}`,
-                  borderRadius: "16px",
+                  borderRadius: "14px",
                   fontWeight: "600",
                   display: "flex",
                   alignItems: "center",
-                  gap: "14px",
-                  transition: "all 0.3s ease"
+                  gap: "12px",
+                  transition: "all 0.25s ease"
                 }}
                 onMouseOver={(e) => {
                   e.currentTarget.style.transform = "translateX(4px)";
@@ -767,12 +806,40 @@ function Dashboard() {
                 }}
                 onClick={() => navigate("/function")}
               >
-                <FaRegCalendarAlt size={18} color="#ec4899" /> Function
+                <FaRegCalendarAlt size={16} color="#ec4899" /> College Functions
+              </div>
+
+              <div
+                style={{
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  color: themeStyles.navBtnText,
+                  padding: "12px 16px",
+                  background: themeStyles.navBtnBg,
+                  border: `1px solid ${themeStyles.profileBorder}`,
+                  borderRadius: "14px",
+                  fontWeight: "600",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  transition: "all 0.25s ease"
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = "translateX(4px)";
+                  e.currentTarget.style.color = themeStyles.textPrimary;
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = "translateX(0)";
+                  e.currentTarget.style.color = themeStyles.navBtnText;
+                }}
+                onClick={() => navigate("/notice-board")}
+              >
+                <FaBullhorn size={16} color="#ea580c" /> Circulars & Notices
               </div>
             </>
           )}
 
-          {/* Librarian (Role 5): Direct quick links to Library and Book Issue */}
+          {/* Librarian (Role 5) */}
           {roleId === 5 && (
             <>
               <div
@@ -780,15 +847,15 @@ function Dashboard() {
                   cursor: "pointer",
                   fontSize: "14px",
                   color: themeStyles.navBtnText,
-                  padding: "14px 18px",
+                  padding: "12px 16px",
                   background: themeStyles.navBtnBg,
                   border: `1px solid ${themeStyles.profileBorder}`,
-                  borderRadius: "16px",
+                  borderRadius: "14px",
                   fontWeight: "600",
                   display: "flex",
                   alignItems: "center",
-                  gap: "14px",
-                  transition: "all 0.3s ease"
+                  gap: "12px",
+                  transition: "all 0.25s ease"
                 }}
                 onMouseOver={(e) => {
                   e.currentTarget.style.transform = "translateX(4px)";
@@ -800,7 +867,7 @@ function Dashboard() {
                 }}
                 onClick={() => navigate("/library")}
               >
-                <FaBookOpen size={18} color="#06b6d4" /> Library
+                <FaBookOpen size={16} color="#06b6d4" /> Library
               </div>
 
               <div
@@ -808,15 +875,15 @@ function Dashboard() {
                   cursor: "pointer",
                   fontSize: "14px",
                   color: themeStyles.navBtnText,
-                  padding: "14px 18px",
+                  padding: "12px 16px",
                   background: themeStyles.navBtnBg,
                   border: `1px solid ${themeStyles.profileBorder}`,
-                  borderRadius: "16px",
+                  borderRadius: "14px",
                   fontWeight: "600",
                   display: "flex",
                   alignItems: "center",
-                  gap: "14px",
-                  transition: "all 0.3s ease"
+                  gap: "12px",
+                  transition: "all 0.25s ease"
                 }}
                 onMouseOver={(e) => {
                   e.currentTarget.style.transform = "translateX(4px)";
@@ -828,12 +895,12 @@ function Dashboard() {
                 }}
                 onClick={() => navigate("/book-issue")}
               >
-                <FaTasks size={18} color="#eab308" /> Book Issue
+                <FaTasks size={16} color="#eab308" /> Book Issue Desk
               </div>
             </>
           )}
 
-          {/* Placement Officer (Role 6): Direct quick links to Company Placement and Placement Student */}
+          {/* Placement Officer (Role 6) */}
           {roleId === 6 && (
             <>
               <div
@@ -841,15 +908,15 @@ function Dashboard() {
                   cursor: "pointer",
                   fontSize: "14px",
                   color: themeStyles.navBtnText,
-                  padding: "14px 18px",
+                  padding: "12px 16px",
                   background: themeStyles.navBtnBg,
                   border: `1px solid ${themeStyles.profileBorder}`,
-                  borderRadius: "16px",
+                  borderRadius: "14px",
                   fontWeight: "600",
                   display: "flex",
                   alignItems: "center",
-                  gap: "14px",
-                  transition: "all 0.3s ease"
+                  gap: "12px",
+                  transition: "all 0.25s ease"
                 }}
                 onMouseOver={(e) => {
                   e.currentTarget.style.transform = "translateX(4px)";
@@ -861,7 +928,7 @@ function Dashboard() {
                 }}
                 onClick={() => navigate("/placement")}
               >
-                <FaBuilding size={18} color="#d946ef" /> Company Detail
+                <FaBuilding size={16} color="#d946ef" /> Company Detail
               </div>
 
               <div
@@ -869,15 +936,15 @@ function Dashboard() {
                   cursor: "pointer",
                   fontSize: "14px",
                   color: themeStyles.navBtnText,
-                  padding: "14px 18px",
+                  padding: "12px 16px",
                   background: themeStyles.navBtnBg,
                   border: `1px solid ${themeStyles.profileBorder}`,
-                  borderRadius: "16px",
+                  borderRadius: "14px",
                   fontWeight: "600",
                   display: "flex",
                   alignItems: "center",
-                  gap: "14px",
-                  transition: "all 0.3s ease"
+                  gap: "12px",
+                  transition: "all 0.25s ease"
                 }}
                 onMouseOver={(e) => {
                   e.currentTarget.style.transform = "translateX(4px)";
@@ -889,16 +956,22 @@ function Dashboard() {
                 }}
                 onClick={() => navigate("/placement-student")}
               >
-                <FaSuitcase size={18} color="#a855f7" /> Placement Student
+                <FaSuitcase size={16} color="#a855f7" /> Placement Student
               </div>
             </>
           )}
+
         </div>
       </div>
 
       {/* Main Grid */}
       <div style={{ flex: 1, padding: "32px 44px", overflowY: "auto", zIndex: 10 }}>
-        <TopBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        <TopBar
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          onOpenPhotoOptions={() => setShowPhotoOptionsModal(true)}
+          onOpenImageInBrowser={handleOpenImageInBrowser}
+        />
 
         <div style={{
           display: "flex",
